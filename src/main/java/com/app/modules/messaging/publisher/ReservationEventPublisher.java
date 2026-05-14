@@ -14,8 +14,7 @@ public class ReservationEventPublisher {
     @Autowired
     private RabbitTemplate rabbitTemplate;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
 
     public void publishCreated(Reservation reservation) {
         send(RabbitMQConfig.ROUTING_CREATED, new ReservationEvent(

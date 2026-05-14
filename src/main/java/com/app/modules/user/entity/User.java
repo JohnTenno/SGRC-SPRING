@@ -1,6 +1,7 @@
 package com.app.modules.user.entity;
 
 import com.app.modules.faculty.entity.Faculty;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 @Entity
@@ -26,54 +27,29 @@ public class User {
 
     private String role;
 
-    public User() {
-    }
+    @JsonIgnore
+    private String password;
 
-    public Integer getId() {
-        return id;
-    }
+    public User() {}
 
-    public void setId(Integer id) {
-        this.id = id;
-    }
+    public Integer getId() { return id; }
+    public void setId(Integer id) { this.id = id; }
 
-    public Faculty getFaculty() {
-        return faculty;
-    }
+    public Faculty getFaculty() { return faculty; }
+    public void setFaculty(Faculty faculty) { this.faculty = faculty; }
 
-    public void setFaculty(Faculty faculty) {
-        this.faculty = faculty;
-    }
+    public String getEnrollment() { return enrollment; }
+    public void setEnrollment(String enrollment) { this.enrollment = enrollment; }
 
-    public String getEnrollment() {
-        return enrollment;
-    }
+    public String getFullName() { return fullName; }
+    public void setFullName(String fullName) { this.fullName = fullName; }
 
-    public void setEnrollment(String enrollment) {
-        this.enrollment = enrollment;
-    }
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
 
-    public String getFullName() {
-        return fullName;
-    }
+    public String getRole() { return role; }
+    public void setRole(String role) { this.role = role; }
 
-    public void setFullName(String fullName) {
-        this.fullName = fullName;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getRole() {
-        return role;
-    }
-
-    public void setRole(String role) {
-        this.role = role;
-    }
+    public String getPassword() { return password; }
+    public void setPassword(String password) { this.password = password; }
 }

@@ -5,6 +5,7 @@ import com.app.modules.user.dto.CreateUserDto;
 import com.app.modules.user.dto.UpdateUserDto;
 import com.app.modules.user.entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,6 +19,9 @@ public class UserService {
 
     @Autowired
     private FacultyRepository facultyRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     public List<User> findAll() {
         return userRepository.findAll();
@@ -34,6 +38,8 @@ public class UserService {
         user.setFullName(dto.getFullName());
         user.setEmail(dto.getEmail());
         user.setRole(dto.getRole() != null ? dto.getRole() : "STUDENT");
+        if (dto.getPassword() != null)
+            user.setPassword(passwordEncoder.encode(dto.getPassword()));
         return userRepository.save(user);
     }
 
@@ -49,6 +55,8 @@ public class UserService {
                 user.setEmail(dto.getEmail());
             if (dto.getRole() != null)
                 user.setRole(dto.getRole());
+            if (dto.getPassword() != null)
+                user.setPassword(passwordEncoder.encode(dto.getPassword()));
             return userRepository.save(user);
         });
     }
