@@ -1,80 +1,68 @@
--- 1 tabla de Facultades
-CREATE TABLE facultades (
-    id_facultad INT AUTO_INCREMENT PRIMARY KEY,
-    nombre_facultad VARCHAR(100) NOT NULL UNIQUE
+CREATE TABLE faculties (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL UNIQUE
 );
 
--- 2 tabla de Edificios
-CREATE TABLE edificios (
-    id_edificio INT AUTO_INCREMENT PRIMARY KEY,
-    nombre VARCHAR(100) NOT NULL,
-    ubicacion VARCHAR(255)
+CREATE TABLE buildings (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    location VARCHAR(255)
 );
 
--- 3 tabla de usuarios
-CREATE TABLE usuarios (
-    id_usuario INT AUTO_INCREMENT PRIMARY KEY,
-    id_facultad INT NOT NULL,
-    matricula VARCHAR(20) NOT NULL UNIQUE,
-    nombre_completo VARCHAR(150) NOT NULL,
-    correo VARCHAR(100) NOT NULL UNIQUE,
-    rol ENUM('ESTUDIANTE', 'DOCENTE', 'ADMIN') DEFAULT 'ESTUDIANTE',
-    FOREIGN KEY (id_facultad) REFERENCES facultades(id_facultad) ON DELETE RESTRICT
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    faculty_id INT NOT NULL,
+    enrollment VARCHAR(20) NOT NULL UNIQUE,
+    full_name VARCHAR(150) NOT NULL,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    role ENUM('STUDENT', 'TEACHER', 'ADMIN') DEFAULT 'STUDENT',
+    FOREIGN KEY (faculty_id) REFERENCES faculties(id) ON DELETE RESTRICT
 );
 
--- 4 tabla de cubículos
-CREATE TABLE cubiculos (
-    id_cubiculo INT AUTO_INCREMENT PRIMARY KEY,
-    id_edificio INT NOT NULL,
-    identificador VARCHAR(20) NOT NULL,
-    capacidad INT NOT NULL,
-    estado ENUM('DISPONIBLE', 'MANTENIMIENTO', 'FUERA_DE_SERVICIO') DEFAULT 'DISPONIBLE',
-    FOREIGN KEY (id_edificio) REFERENCES edificios(id_edificio) ON DELETE CASCADE
+CREATE TABLE cubicles (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    building_id INT NOT NULL,
+    identifier VARCHAR(20) NOT NULL,
+    capacity INT NOT NULL,
+    status ENUM('AVAILABLE', 'MAINTENANCE', 'OUT_OF_SERVICE') DEFAULT 'AVAILABLE',
+    FOREIGN KEY (building_id) REFERENCES buildings(id) ON DELETE CASCADE
 );
 
--- 5 tabla de reservaciones 
-CREATE TABLE reservaciones (
-    id_reservacion INT AUTO_INCREMENT PRIMARY KEY,
-    id_usuario INT NOT NULL,
-    id_cubiculo INT NOT NULL,
-    fecha DATE NOT NULL,
-    hora_inicio TIME NOT NULL,
-    hora_fin TIME NOT NULL,
-    estado_reservacion ENUM('PENDIENTE', 'ACTIVA', 'COMPLETADA', 'CANCELADA', 'NO_ASISTIO') DEFAULT 'PENDIENTE',
-    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario),
-    FOREIGN KEY (id_cubiculo) REFERENCES cubiculos(id_cubiculo)
+CREATE TABLE reservations (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    cubicle_id INT NOT NULL,
+    date DATE NOT NULL,
+    start_time TIME NOT NULL,
+    end_time TIME NOT NULL,
+    status ENUM('PENDING', 'ACTIVE', 'COMPLETED', 'CANCELLED', 'NO_SHOW') DEFAULT 'PENDING',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (cubicle_id) REFERENCES cubicles(id)
 );
 
--- 6 tabla de sanciones
-CREATE TABLE sanciones (
-    id_sancion INT AUTO_INCREMENT PRIMARY KEY,
-    id_usuario INT NOT NULL,
-    motivo VARCHAR(255) NOT NULL,
-    fecha_inicio DATE NOT NULL,
-    fecha_fin DATE NOT NULL,
-    FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario) ON DELETE CASCADE
+CREATE TABLE sanctions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    reason VARCHAR(255) NOT NULL,
+    start_date DATE NOT NULL,
+    end_date DATE NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
------------------------------------inserts-----------------------------------
+INSERT INTO faculties (name) VALUES
+('Engineering'), ('Accounting and Administration'), ('Law');
 
--- insertar facultades
-INSERT INTO facultades (nombre_facultad) VALUES 
-('Ingeniería'), ('Contaduría y Administración'), ('Derecho');
+INSERT INTO buildings (name, location) VALUES
+('Central Library', 'Campus 1'),
+('Computer Center', 'Campus 2');
 
--- insertar edificios
-INSERT INTO edificios (nombre, ubicacion) VALUES 
-('Biblioteca Central', 'Campus 1'), 
-('Centro de Cómputo', 'Campus 2');
+INSERT INTO users (faculty_id, enrollment, full_name, email, role) VALUES
+(1, '367886', 'Admin Nico',        'a367886@uach.mx', 'ADMIN'),
+(1, '374357', 'Admin JohnT',       'a374357@uach.mx', 'ADMIN'),
+(1, '367651', 'Admin Samuel',      'a367651@uach.mx', 'ADMIN'),
+(1, '231010', 'Student Juanito',   'a231010@uach.mx', 'STUDENT'),
+(1, '102030', 'Teacher DeLira',    'a102030@uach.mx', 'TEACHER');
 
--- insertar usuarios
-INSERT INTO usuarios (id_facultad, matricula, nombre_completo, correo, rol) VALUES 
-(1, '367886', 'Admin Nico', 'a367886@uach.mx', 'ADMIN'),
-(1, '374357', 'Admin JohnT', 'a374357@uach.mx', 'ADMIN'),
-(1, '367651', 'Admin Samuel', 'a367651@uach.mx', 'ADMIN'),
-(1, '231010', 'ESTUDIANTE Juanito ', 'a374357@uach.mx', 'ESTUDIANTE'),
-(1, '102030', 'DOCENTE DeLira', 'a102030@uach.mx', 'DOCENTE');
-
--- insertar cubículos
-INSERT INTO cubiculos (id_edificio, identificador, capacidad) VALUES 
+INSERT INTO cubicles (building_id, identifier, capacity) VALUES
 (1, 'CB-01', 4), (1, 'CB-02', 6), (2, 'LAB-A', 3);
