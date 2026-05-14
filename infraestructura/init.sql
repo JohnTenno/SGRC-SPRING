@@ -15,6 +15,7 @@ CREATE TABLE users (
     enrollment VARCHAR(20) NOT NULL UNIQUE,
     full_name VARCHAR(150) NOT NULL,
     email VARCHAR(100) NOT NULL UNIQUE,
+    password VARCHAR(255),
     role ENUM('STUDENT', 'TEACHER', 'ADMIN') DEFAULT 'STUDENT',
     FOREIGN KEY (faculty_id) REFERENCES faculties(id) ON DELETE RESTRICT
 );
