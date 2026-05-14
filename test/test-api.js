@@ -116,7 +116,7 @@ async function run() {
     '/auth/login',
     {
       enrollment: '374357',
-      password: 'password',
+      password: 'password123',
     },
     false
   );

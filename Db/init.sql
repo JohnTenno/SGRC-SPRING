@@ -180,11 +180,11 @@ INSERT INTO faculties (name, campus_id) VALUES
 
 -- Usuarios Iniciales
 INSERT INTO users (enrollment, name, email, password, role, is_tutor, faculty_id) VALUES 
-('367886', 'Nicolas Nevarez', 'a367886@uach.mx', 'password123', 'ADMIN', false, 1),
-('374357', 'Jonathan Gandara', 'a374357@uach.mx', 'password123', 'STUDENT', true, 1),
-('367651', 'Samuel García ', 'a367651@uach.mx', 'password123', 'STUDENT', false, 1),
-('123122', 'Maestro Juan ', 'a123122@uach.mx', 'password123', 'TEACHER', true, 1),
-('100100', 'Encargado Biblioteca', 'staff@uach.mx', 'password123', 'STAFF', false, 1);
+('367886', 'Nicolas Nevarez', 'a367886@uach.mx', 'ADMIN', false, 1),
+('374357', 'Jonathan Gandara', 'a374357@uach.mx', 'STUDENT', true, 1),
+('367651', 'Samuel García ', 'a367651@uach.mx', 'STUDENT', false, 1),
+('123122', 'Maestro Juan ', 'a123122@uach.mx', 'TEACHER', true, 1),
+('100100', 'Encargado Biblioteca', 'staff@uach.mx', 'STAFF', false, 1);
 
 
 -- Infraestructura
