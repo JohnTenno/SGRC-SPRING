@@ -4,20 +4,26 @@ import com.app.modules.building.entity.Building;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "cubicles")
+@Table(name = "cubicle")
 public class Cubicle {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "cubicle_id")
     private Integer id;
 
-    @ManyToOne
+    @ManyToOne(optional = false)
     @JoinColumn(name = "building_id", nullable = false)
     private Building building;
 
+    @Column(name = "name", nullable = false, length = 80)
     private String identifier;
+
+    @Column(name = "max_capacity", nullable = false)
     private Integer capacity;
-    private String status; // AVAILABLE, MAINTENANCE, OUT_OF_SERVICE
+
+    @Column(nullable = false, length = 20)
+    private String status;
 
     public Cubicle() {
     }

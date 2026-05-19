@@ -1,16 +1,25 @@
 package com.app.modules.building.entity;
 
+import com.app.modules.faculty.entity.Faculty;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "buildings")
+@Table(name = "building")
 public class Building {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "building_id")
     private Integer id;
 
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "faculty_id", nullable = false)
+    private Faculty faculty;
+
+    @Column(nullable = false, length = 120)
     private String name;
+
+    @Transient
     private String location;
 
     public Building() {
@@ -22,6 +31,14 @@ public class Building {
 
     public void setId(Integer id) {
         this.id = id;
+    }
+
+    public Faculty getFaculty() {
+        return faculty;
+    }
+
+    public void setFaculty(Faculty faculty) {
+        this.faculty = faculty;
     }
 
     public String getName() {

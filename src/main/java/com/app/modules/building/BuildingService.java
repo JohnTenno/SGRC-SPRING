@@ -3,6 +3,7 @@ package com.app.modules.building;
 import com.app.modules.building.dto.CreateBuildingDto;
 import com.app.modules.building.dto.UpdateBuildingDto;
 import com.app.modules.building.entity.Building;
+import com.app.modules.faculty.FacultyRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +15,9 @@ public class BuildingService {
 
     @Autowired
     private BuildingRepository buildingRepository;
+
+    @Autowired
+    private FacultyRepository facultyRepository;
 
     public List<Building> findAll() {
         return buildingRepository.findAll();
@@ -27,6 +31,7 @@ public class BuildingService {
         Building building = new Building();
         building.setName(dto.getName());
         building.setLocation(dto.getLocation());
+        facultyRepository.findById(1).ifPresent(building::setFaculty);
         return buildingRepository.save(building);
     }
 

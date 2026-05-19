@@ -2,7 +2,26 @@
 set -e
 
 echo "▶ Start MySQL + RabbitMQ..."
-cd Db && docker compose up -d && cd ..
+cd Db && docker compose up -d --wait && cd ..
+
+wait_for_container() {
+  local name=$1 check_cmd=$2
+  echo "   Esperando $name..."
+  local attempts=0
+  while [ "$attempts" -lt 60 ]; do
+    if docker exec "$name" sh -c "$check_cmd" >/dev/null 2>&1; then
+      echo "   $name listo."
+      return 0
+    fi
+    attempts=$((attempts + 1))
+    sleep 2
+  done
+  echo "   ERROR: $name no respondió a tiempo."
+  exit 1
+}
+
+wait_for_container sgrc_db "mysqladmin ping -h localhost -u sgrc_user -psgrc_password --silent"
+wait_for_container sgrc_rabbitmq "rabbitmq-diagnostics -q ping"
 
 echo "▶ Start Spring Boot..."
 

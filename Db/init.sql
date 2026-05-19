@@ -4,13 +4,9 @@ CREATE DATABASE IF NOT EXISTS sgrc_db
 
 USE sgrc_db;
 
-DROP USER IF EXISTS 'sgrc_user'@'%';
-CREATE USER 'sgrc_user'@'%' IDENTIFIED BY 'sgrc_password';
-GRANT SELECT, INSERT, UPDATE, DELETE ON sgrc_db.* TO 'sgrc_user'@'%';
-FLUSH PRIVILEGES;
-
 SET FOREIGN_KEY_CHECKS = 0;
 
+DROP TABLE IF EXISTS import_log;
 DROP TABLE IF EXISTS notification;
 DROP TABLE IF EXISTS penalty;
 DROP TABLE IF EXISTS loan;
@@ -71,6 +67,7 @@ CREATE TABLE `user` (
                                  NOT NULL DEFAULT 'STUDENT',
     is_tutor      TINYINT(1)     NOT NULL DEFAULT 0,
     is_blocked    TINYINT(1)     NOT NULL DEFAULT 0,
+    must_change_password TINYINT(1) NOT NULL DEFAULT 1,
     created_at    TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT pk_user           PRIMARY KEY (user_id),
     CONSTRAINT uq_email          UNIQUE (email),
@@ -198,6 +195,23 @@ CREATE TABLE notification (
 CREATE INDEX idx_notif_user        ON notification(user_id, is_read);
 CREATE INDEX idx_notif_expiration  ON notification(expiration_date);
 
+
+-- ---------------------------------------------------------------------------
+CREATE TABLE import_log (
+    import_id          INT            NOT NULL AUTO_INCREMENT,
+    manager_admin_id   INT            NOT NULL,
+    file_name          VARCHAR(255)   NOT NULL,
+    records_processed  INT            NOT NULL DEFAULT 0,
+    status             ENUM('SUCCESS', 'FAILED', 'PARTIAL') NOT NULL DEFAULT 'SUCCESS',
+    created_at         TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT pk_import_log PRIMARY KEY (import_id),
+    CONSTRAINT fk_import_admin FOREIGN KEY (manager_admin_id)
+        REFERENCES `user`(user_id) ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE INDEX idx_import_status ON import_log(status);
+
+
 -- ---------------------------------------------------------------------------
 --     Runs every 24 hours and deletes notifications whose expiration_date
 --     has passed, equivalent to Spring's @Scheduled as DB backup.
@@ -216,7 +230,7 @@ CREATE EVENT evt_wipe_notifications
 -- ===========================================================================
 --  DML — TEST DATA
 --  Password for all users: password123
---  BCrypt cost-10 Hash: $2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lh72
+--  BCrypt cost-10 Hash: $2a$10$KRAAi6/KflfRkNZwF8hh4u.cdNqXcie2MUgXNRnRYK1l5Qg1yVKc2
 -- ===========================================================================
 
 -- ---------------------------------------------------------------------------
@@ -247,42 +261,42 @@ INSERT INTO cubicle (cubicle_id, building_id, name, max_capacity, status) VALUES
 
 -- ---------------------------------------------------------------------------
 -- USERS
---   id  enrollment  role       is_tutor is_blocked description
---   1   ADM001      ADMIN      0        0          Main Administrator
---   2   367886      STUDENT    0        0          Active normal student
---   3   374357      STUDENT    1        0          Tutor (can make 4 res/day)
---   4   367651      STUDENT    0        1          BLOCKED by active penalty
---   5   EMP001      TEACHER    0        0          Active teacher
---   6   EMP002      TEACHER    0        0          Teacher with clean history
---   7   STU004      STUDENT    0        0          Student with active loan
---   8   STU005      STUDENT    0        0          Student with PENDING res
+--   id  enrollment  role       is_tutor is_blocked must_change  description
+--   1   ADM001      ADMIN      0        0          0            Main Administrator
+--   2   367886      STUDENT    0        0          0            Active normal student
+--   3   374357      STUDENT    1        0          0            Tutor (can make 4 res/day)
+--   4   367651      STUDENT    0        1          0            BLOCKED by active penalty
+--   5   EMP001      TEACHER    0        0          0            Active teacher
+--   6   EMP002      TEACHER    0        0          0            Teacher with clean history
+--   7   STU004      STUDENT    0        0          0            Student with active loan
+--   8   STU005      STUDENT    0        0          1            TEST FORCED PASSWORD CHANGE
 -- ---------------------------------------------------------------------------
 INSERT INTO `user`
-    (user_id, faculty_id, first_name, last_name, email, enrollment, password_hash, role, is_tutor, is_blocked)
+    (user_id, faculty_id, first_name, last_name, email, enrollment, password_hash, role, is_tutor, is_blocked, must_change_password)
 VALUES
-    -- Administrator
-    (1, 1, 'Laura',    'Mendoza Ríos',      'admin@uach.mx',          'ADM001', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lh72', 'ADMIN',   0, 0),
+    -- Administrator (Flujo libre para pruebas)
+    (1, 1, 'Laura',    'Mendoza Ríos',      'admin@uach.mx',          'ADM001', '$2a$10$KRAAi6/KflfRkNZwF8hh4u.cdNqXcie2MUgXNRnRYK1l5Qg1yVKc2', 'ADMIN',   0, 0, 0),
 
-    -- Normal student
-    (2, 1, 'Nicolás',  'Nevárez Loera',     'a367886@uach.mx',        '367886', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lh72', 'STUDENT', 0, 0),
+    -- Normal student (Flujo libre para pruebas)
+    (2, 1, 'Nicolás',  'Nevárez Loera',     'a367886@uach.mx',        '367886', '$2a$10$KRAAi6/KflfRkNZwF8hh4u.cdNqXcie2MUgXNRnRYK1l5Qg1yVKc2', 'STUDENT', 0, 0, 0),
 
-    -- Tutor (is_tutor = 1, up to 4 active reservations per day)
-    (3, 1, 'Jonathan', 'Gandara Salazar',   'a374357@uach.mx',        '374357', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lh72', 'STUDENT', 1, 0),
+    -- Tutor 
+    (3, 1, 'Jonathan', 'Gandara Salazar',   'a374357@uach.mx',        '374357', '$2a$10$KRAAi6/KflfRkNZwF8hh4u.cdNqXcie2MUgXNRnRYK1l5Qg1yVKc2', 'STUDENT', 1, 0, 0),
 
-    -- BLOCKED student by active penalty — cannot reserve or request loan
-    (4, 1, 'Samuel',   'García Gómez',      'a367651@uach.mx',        '367651', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lh72', 'STUDENT', 0, 1),
+    -- BLOCKED student
+    (4, 1, 'Samuel',   'García Gómez',      'a367651@uach.mx',        '367651', '$2a$10$KRAAi6/KflfRkNZwF8hh4u.cdNqXcie2MUgXNRnRYK1l5Qg1yVKc2', 'STUDENT', 0, 1, 0),
 
     -- Active teacher
-    (5, 1, 'Marco',    'Herrera Bustamante','m.herrera@uach.mx',      'EMP001', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lh72', 'TEACHER', 0, 0),
+    (5, 1, 'Marco',    'Herrera Bustamante','m.herrera@uach.mx',      'EMP001', '$2a$10$KRAAi6/KflfRkNZwF8hh4u.cdNqXcie2MUgXNRnRYK1l5Qg1yVKc2', 'TEACHER', 0, 0, 0),
 
     -- Teacher clean history
-    (6, 1, 'Diana',    'Ramos Ortega',      'd.ramos@uach.mx',        'EMP002', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lh72', 'TEACHER', 0, 0),
+    (6, 1, 'Diana',    'Ramos Ortega',      'd.ramos@uach.mx',        'EMP002', '$2a$10$KRAAi6/KflfRkNZwF8hh4u.cdNqXcie2MUgXNRnRYK1l5Qg1yVKc2', 'TEACHER', 0, 0, 0),
 
-    -- Student with active loan (projector — handed ID)
-    (7, 1, 'Emilio',   'Castillo Vega',     'a370001@uach.mx',        'STU004', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lh72', 'STUDENT', 0, 0),
+    -- Student with active loan 
+    (7, 1, 'Emilio',   'Castillo Vega',     'a370001@uach.mx',        'STU004', '$2a$10$KRAAi6/KflfRkNZwF8hh4u.cdNqXcie2MUgXNRnRYK1l5Qg1yVKc2', 'STUDENT', 0, 0, 0),
 
-    -- Student with PENDING reservation (schedule conflict under review)
-    (8, 1, 'Valeria',  'Torres Montoya',    'a370002@uach.mx',        'STU005', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lh72', 'STUDENT', 0, 0);
+    -- Student TEST FORCED PASSWORD CHANGE (Este usuario SÍ pedirá cambio de contraseña al loguearse)
+    (8, 1, 'Valeria',  'Torres Montoya',    'a370002@uach.mx',        'STU005', '$2a$10$KRAAi6/KflfRkNZwF8hh4u.cdNqXcie2MUgXNRnRYK1l5Qg1yVKc2', 'STUDENT', 0, 0, 1);
 
 -- ---------------------------------------------------------------------------
 -- EQUIPMENT_TYPE (RF-06)
@@ -459,6 +473,9 @@ VALUES
     (10, 3, 3,
      '[TEST-WIPE] This notification has already expired and must be deleted by the scheduler.',
      0, DATE_SUB(NOW(), INTERVAL 61 DAY), DATE_SUB(NOW(), INTERVAL 1 DAY));
+
+
+
 
 
 -- ===========================================================================

@@ -3,14 +3,15 @@ package com.app.modules.faculty.entity;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "faculties")
+@Table(name = "faculty")
 public class Faculty {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "faculty_id")
     private Integer id;
 
-    @Column(name = "name", nullable = false, unique = true, length = 100)
+    @Column(name = "name", nullable = false, length = 120)
     private String name;
 
     public Faculty() {

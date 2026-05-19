@@ -311,5 +311,5 @@ function printSummary() {
 run().catch((err) => {
   console.error('FATAL ERROR');
   console.error(err.message);
-  console.error('Is the server running on localhost:8080 ?');
+  console.error('Is the server running on http://localhost:3000 ?');
 });
