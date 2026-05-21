@@ -46,6 +46,7 @@ CREATE TABLE cubicle (
     max_capacity  INT            NOT NULL DEFAULT 6,
     status        ENUM('AVAILABLE','OCCUPIED','MAINTENANCE')
                                  NOT NULL DEFAULT 'AVAILABLE',
+    qr_token      VARCHAR(100)   NOT NULL UNIQUE DEFAULT (UUID()),
     CONSTRAINT pk_cubicle       PRIMARY KEY (cubicle_id),
     CONSTRAINT fk_cub_building  FOREIGN KEY (building_id)
         REFERENCES building(building_id) ON DELETE RESTRICT ON UPDATE CASCADE,
@@ -53,7 +54,7 @@ CREATE TABLE cubicle (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ---------------------------------------------------------------------------
---    role: STUDENT | TEACHER | ADMIN
+--    role: STUDENT | TEACHER | ADMIN | RECEPTOR
 -- ---------------------------------------------------------------------------
 CREATE TABLE `user` (
     user_id       INT            NOT NULL AUTO_INCREMENT,
@@ -63,7 +64,7 @@ CREATE TABLE `user` (
     email         VARCHAR(120)   NOT NULL,
     enrollment    VARCHAR(20)    NOT NULL,
     password_hash VARCHAR(255)   NOT NULL,
-    role          ENUM('STUDENT','TEACHER','ADMIN')
+    role          ENUM('STUDENT','TEACHER','ADMIN','RECEPTOR')
                                  NOT NULL DEFAULT 'STUDENT',
     is_tutor      TINYINT(1)     NOT NULL DEFAULT 0,
     is_blocked    TINYINT(1)     NOT NULL DEFAULT 0,
@@ -80,7 +81,7 @@ CREATE INDEX idx_user_role       ON `user`(role);
 CREATE INDEX idx_user_blocked    ON `user`(is_blocked);
 
 -- ---------------------------------------------------------------------------
---    status: PENDING | APPROVED | COMPLETED | CANCELLED
+--    status: PENDING | APPROVED | ACTIVE | COMPLETED | CANCELLED
 -- ---------------------------------------------------------------------------
 CREATE TABLE reservation (
     reservation_id INT            NOT NULL AUTO_INCREMENT,
@@ -89,9 +90,10 @@ CREATE TABLE reservation (
     reservation_date DATE         NOT NULL,
     start_time     TIME           NOT NULL,
     end_time       TIME           NOT NULL,
-    status         ENUM('PENDING','APPROVED','COMPLETED','CANCELLED')
+    status         ENUM('PENDING','APPROVED','ACTIVE','COMPLETED','CANCELLED')
                                   NOT NULL DEFAULT 'PENDING',
     created_at     TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    cancellation_penalty TINYINT(1) NOT NULL DEFAULT 0,
     CONSTRAINT pk_reservation     PRIMARY KEY (reservation_id),
     CONSTRAINT fk_res_user        FOREIGN KEY (user_id)
         REFERENCES `user`(user_id) ON DELETE RESTRICT ON UPDATE CASCADE,
@@ -296,7 +298,10 @@ VALUES
     (7, 1, 'Emilio',   'Castillo Vega',     'a370001@uach.mx',        'STU004', '$2a$10$KRAAi6/KflfRkNZwF8hh4u.cdNqXcie2MUgXNRnRYK1l5Qg1yVKc2', 'STUDENT', 0, 0, 0),
 
     -- Student TEST FORCED PASSWORD CHANGE (Este usuario SÍ pedirá cambio de contraseña al loguearse)
-    (8, 1, 'Valeria',  'Torres Montoya',    'a370002@uach.mx',        'STU005', '$2a$10$KRAAi6/KflfRkNZwF8hh4u.cdNqXcie2MUgXNRnRYK1l5Qg1yVKc2', 'STUDENT', 0, 0, 1);
+    (8, 1, 'Valeria',  'Torres Montoya',    'a370002@uach.mx',        'STU005', '$2a$10$KRAAi6/KflfRkNZwF8hh4u.cdNqXcie2MUgXNRnRYK1l5Qg1yVKc2', 'STUDENT', 0, 0, 1),
+    
+    -- iPad Receptor
+    (9, 1, 'iPad',  'Cubículo 01', 'receptor.c01@uach.mx', 'RCP001', '$2a$10$KRAAi6/KflfRkNZwF8hh4u.cdNqXcie2MUgXNRnRYK1l5Qg1yVKc2', 'RECEPTOR', 0, 0, 0);
 
 -- ---------------------------------------------------------------------------
 -- EQUIPMENT_TYPE (RF-06)
