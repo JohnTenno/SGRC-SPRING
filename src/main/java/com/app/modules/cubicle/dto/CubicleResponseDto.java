@@ -4,31 +4,21 @@ import com.app.modules.cubicle.entity.Cubicle;
 
 public class CubicleResponseDto {
     private Integer id;
-    private Integer buildingId;
-    private String buildingName;
     private String identifier;
     private Integer capacity;
     private String status;
+    private String qrToken;
 
     public CubicleResponseDto(Cubicle cubicle) {
         this.id = cubicle.getId();
-        this.buildingId = cubicle.getBuilding().getId();
-        this.buildingName = cubicle.getBuilding().getName();
         this.identifier = cubicle.getIdentifier();
         this.capacity = cubicle.getCapacity();
         this.status = cubicle.getStatus();
+        this.qrToken = cubicle.getQrToken();
     }
 
     public Integer getId() {
         return id;
-    }
-
-    public Integer getBuildingId() {
-        return buildingId;
-    }
-
-    public String getBuildingName() {
-        return buildingName;
     }
 
     public String getIdentifier() {
@@ -41,5 +31,9 @@ public class CubicleResponseDto {
 
     public String getStatus() {
         return status;
+    }
+
+    public String getQrToken() {
+        return qrToken;
     }
 }

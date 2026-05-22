@@ -44,6 +44,14 @@ public class AuthService implements UserDetailsService {
         }
 
         String token = jwtUtil.generateToken(user.getEnrollment());
-        return new AuthResponseDto(token, user.getEnrollment(), user.getRole());
+        AuthResponseDto.UserInfo userInfo = new AuthResponseDto.UserInfo(
+                user.getId(),
+                user.getEnrollment(),
+                user.getFullName(),
+                user.getEmail(),
+                user.getRole(),
+                user.isTutor(),
+                user.getFacultyId());
+        return new AuthResponseDto(token, userInfo);
     }
 }

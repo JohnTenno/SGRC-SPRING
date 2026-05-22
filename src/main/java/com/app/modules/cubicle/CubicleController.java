@@ -3,9 +3,12 @@ package com.app.modules.cubicle;
 import com.app.modules.cubicle.dto.CreateCubicleDto;
 import com.app.modules.cubicle.dto.CubicleResponseDto;
 import com.app.modules.cubicle.dto.UpdateCubicleDto;
+import com.app.modules.reservation.ReservationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDate;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -16,6 +19,9 @@ public class CubicleController {
 
     @Autowired
     private CubicleService cubicleService;
+
+    @Autowired
+    private ReservationService reservationService;
 
     @GetMapping
     public List<CubicleResponseDto> getAll() {
@@ -50,5 +56,21 @@ public class CubicleController {
         return cubicleService.delete(id)
                 ? ResponseEntity.noContent().build()
                 : ResponseEntity.notFound().build();
+    }
+
+    @GetMapping("/{id}/active-session")
+    public ResponseEntity<?> getActiveSession(@PathVariable Integer id) {
+        return reservationService.findCurrentActiveSession(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/{id}/slots")
+    public ResponseEntity<?> getOccupiedSlots(
+            @PathVariable Integer id,
+            @RequestParam("date") LocalDate date) {
+        if (!cubicleService.findById(id).isPresent())
+            return ResponseEntity.notFound().build();
+        return ResponseEntity.ok(reservationService.findOccupiedStartTimes(id, date));
     }
 }

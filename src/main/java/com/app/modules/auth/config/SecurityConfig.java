@@ -4,6 +4,7 @@ import com.app.modules.auth.filter.JwtAuthFilter;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -25,12 +26,17 @@ public class SecurityConfig {
         SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
                 return http
                                 .csrf(AbstractHttpConfigurer::disable)
+                                .cors(cors -> {
+                                })
                                 .sessionManagement(session -> session
                                                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                                 .authorizeHttpRequests(auth -> auth
-                                                .requestMatchers("/api/auth/**").permitAll()
-                                                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**",
+                                                .requestMatchers("/api", "/api/auth/**").permitAll()
+                                                .requestMatchers("/swagger-ui/**", "/v3/api-docs", "/v3/api-docs/**",
                                                                 "/swagger-ui.html")
+                                                .permitAll()
+                                                .requestMatchers("/ws/**").permitAll()
+                                                .requestMatchers(HttpMethod.GET, "/api/cubicles", "/api/cubicles/**")
                                                 .permitAll()
                                                 .anyRequest().authenticated())
                                 .exceptionHandling(ex -> ex
@@ -39,5 +45,4 @@ public class SecurityConfig {
                                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                                 .build();
         }
-
 }

@@ -14,7 +14,6 @@ DROP TABLE IF EXISTS equipment_type;
 DROP TABLE IF EXISTS reservation;
 DROP TABLE IF EXISTS `user`;
 DROP TABLE IF EXISTS cubicle;
-DROP TABLE IF EXISTS building;
 DROP TABLE IF EXISTS faculty;
 
 SET FOREIGN_KEY_CHECKS = 1;
@@ -27,29 +26,16 @@ CREATE TABLE faculty (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ---------------------------------------------------------------------------
-CREATE TABLE building (
-    building_id   INT            NOT NULL AUTO_INCREMENT,
-    faculty_id    INT            NOT NULL,
-    name          VARCHAR(120)   NOT NULL,
-    CONSTRAINT pk_building      PRIMARY KEY (building_id),
-    CONSTRAINT fk_bldg_faculty  FOREIGN KEY (faculty_id)
-        REFERENCES faculty(faculty_id) ON DELETE RESTRICT ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- ---------------------------------------------------------------------------
 --    status: AVAILABLE | OCCUPIED | MAINTENANCE
 -- ---------------------------------------------------------------------------
 CREATE TABLE cubicle (
     cubicle_id    INT            NOT NULL AUTO_INCREMENT,
-    building_id   INT            NOT NULL,
     name          VARCHAR(80)    NOT NULL,
     max_capacity  INT            NOT NULL DEFAULT 6,
     status        ENUM('AVAILABLE','OCCUPIED','MAINTENANCE')
                                  NOT NULL DEFAULT 'AVAILABLE',
     qr_token      VARCHAR(100)   NOT NULL UNIQUE DEFAULT (UUID()),
     CONSTRAINT pk_cubicle       PRIMARY KEY (cubicle_id),
-    CONSTRAINT fk_cub_building  FOREIGN KEY (building_id)
-        REFERENCES building(building_id) ON DELETE RESTRICT ON UPDATE CASCADE,
     CONSTRAINT chk_capacity     CHECK (max_capacity > 0)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -157,8 +143,8 @@ CREATE TABLE penalty (
     penalty_id       INT            NOT NULL AUTO_INCREMENT,
     user_id          INT            NOT NULL,
     loan_id          INT,
-    manager_admin_id INT            NOT NULL,
-    type             ENUM('LATE_RETURN','DISORDER')
+    manager_admin_id INT            NULL,
+    type             ENUM('LATE_RETURN','DISORDER','NO_SHOW','LATE_CANCELLATION')
                                     NOT NULL,
     reason           VARCHAR(255)   NOT NULL,
     start_date       TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -170,7 +156,7 @@ CREATE TABLE penalty (
     CONSTRAINT fk_penal_loan        FOREIGN KEY (loan_id)
         REFERENCES loan(loan_id) ON DELETE SET NULL ON UPDATE CASCADE,
     CONSTRAINT fk_penal_admin       FOREIGN KEY (manager_admin_id)
-        REFERENCES `user`(user_id) ON DELETE RESTRICT ON UPDATE CASCADE,
+        REFERENCES `user`(user_id) ON DELETE SET NULL ON UPDATE CASCADE,
     CONSTRAINT chk_penalty_dates    CHECK (end_date > start_date)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -236,13 +222,10 @@ CREATE EVENT evt_wipe_notifications
 -- ===========================================================================
 
 -- ---------------------------------------------------------------------------
--- FACULTY & BUILDING
+-- FACULTY
 -- ---------------------------------------------------------------------------
 INSERT INTO faculty (faculty_id, name) VALUES
     (1, 'Faculty of Engineering');
-
-INSERT INTO building (building_id, faculty_id, name) VALUES
-    (1, 1, 'Central Library');
 
 -- ---------------------------------------------------------------------------
 -- CUBICLES (6 cubicles — RF-01)
@@ -253,13 +236,13 @@ INSERT INTO building (building_id, faculty_id, name) VALUES
 --   C5: OCCUPIED      ← active reservation on it
 --   C6: MAINTENANCE
 -- ---------------------------------------------------------------------------
-INSERT INTO cubicle (cubicle_id, building_id, name, max_capacity, status) VALUES
-    (1, 1, 'Library Cubicle 01', 6, 'AVAILABLE'),
-    (2, 1, 'Library Cubicle 02', 4, 'AVAILABLE'),
-    (3, 1, 'Library Cubicle 03', 6, 'AVAILABLE'),
-    (4, 1, 'Library Cubicle 04', 4, 'AVAILABLE'),
-    (5, 1, 'Library Cubicle 05', 6, 'OCCUPIED'),
-    (6, 1, 'Library Cubicle 06', 4, 'MAINTENANCE');
+INSERT INTO cubicle (cubicle_id, name, max_capacity, status) VALUES
+    (1, 'Library Cubicle 01', 6, 'AVAILABLE'),
+    (2, 'Library Cubicle 02', 4, 'AVAILABLE'),
+    (3, 'Library Cubicle 03', 6, 'AVAILABLE'),
+    (4, 'Library Cubicle 04', 4, 'AVAILABLE'),
+    (5, 'Library Cubicle 05', 6, 'OCCUPIED'),
+    (6, 'Library Cubicle 06', 4, 'MAINTENANCE');
 
 -- ---------------------------------------------------------------------------
 -- USERS

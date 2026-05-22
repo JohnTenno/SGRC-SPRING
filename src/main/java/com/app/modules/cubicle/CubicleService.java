@@ -1,6 +1,5 @@
 package com.app.modules.cubicle;
 
-import com.app.modules.building.BuildingRepository;
 import com.app.modules.cubicle.dto.CreateCubicleDto;
 import com.app.modules.cubicle.dto.UpdateCubicleDto;
 import com.app.modules.cubicle.entity.Cubicle;
@@ -16,9 +15,6 @@ public class CubicleService {
     @Autowired
     private CubicleRepository cubicleRepository;
 
-    @Autowired
-    private BuildingRepository buildingRepository;
-
     public List<Cubicle> findAll() {
         return cubicleRepository.findAll();
     }
@@ -29,17 +25,14 @@ public class CubicleService {
 
     public Cubicle create(CreateCubicleDto dto) {
         Cubicle cubicle = new Cubicle();
-        buildingRepository.findById(dto.getBuildingId()).ifPresent(cubicle::setBuilding);
         cubicle.setIdentifier(dto.getIdentifier());
-        cubicle.setCapacity(dto.getCapacity());
+        cubicle.setCapacity(dto.getCapacity() != null ? dto.getCapacity() : 6);
         cubicle.setStatus(dto.getStatus() != null ? dto.getStatus() : "AVAILABLE");
         return cubicleRepository.save(cubicle);
     }
 
     public Optional<Cubicle> update(Integer id, UpdateCubicleDto dto) {
         return cubicleRepository.findById(id).map(cubicle -> {
-            if (dto.getBuildingId() != null)
-                buildingRepository.findById(dto.getBuildingId()).ifPresent(cubicle::setBuilding);
             if (dto.getIdentifier() != null)
                 cubicle.setIdentifier(dto.getIdentifier());
             if (dto.getCapacity() != null)

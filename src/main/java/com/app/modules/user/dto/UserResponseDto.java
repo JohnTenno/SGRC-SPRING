@@ -5,20 +5,20 @@ import com.app.modules.user.entity.User;
 public class UserResponseDto {
     private Integer id;
     private Integer facultyId;
-    private String facultyName;
     private String enrollment;
     private String fullName;
     private String email;
     private String role;
+    private boolean blocked;
 
     public UserResponseDto(User user) {
         this.id = user.getId();
-        this.facultyId = user.getFaculty().getId();
-        this.facultyName = user.getFaculty().getName();
+        this.facultyId = user.getFacultyId();
         this.enrollment = user.getEnrollment();
         this.fullName = user.getFullName();
         this.email = user.getEmail();
         this.role = user.getRole();
+        this.blocked = user.isBlocked();
     }
 
     public Integer getId() {
@@ -27,10 +27,6 @@ public class UserResponseDto {
 
     public Integer getFacultyId() {
         return facultyId;
-    }
-
-    public String getFacultyName() {
-        return facultyName;
     }
 
     public String getEnrollment() {
@@ -47,5 +43,9 @@ public class UserResponseDto {
 
     public String getRole() {
         return role;
+    }
+
+    public boolean isBlocked() {
+        return blocked;
     }
 }

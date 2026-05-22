@@ -1,6 +1,5 @@
 package com.app.modules.user;
 
-import com.app.modules.faculty.FacultyRepository;
 import com.app.modules.user.dto.CreateUserDto;
 import com.app.modules.user.dto.UpdateUserDto;
 import com.app.modules.user.entity.User;
@@ -18,9 +17,6 @@ public class UserService {
     private UserRepository userRepository;
 
     @Autowired
-    private FacultyRepository facultyRepository;
-
-    @Autowired
     private PasswordEncoder passwordEncoder;
 
     public List<User> findAll() {
@@ -33,7 +29,7 @@ public class UserService {
 
     public User create(CreateUserDto dto) {
         User user = new User();
-        facultyRepository.findById(dto.getFacultyId()).ifPresent(user::setFaculty);
+        user.setFacultyId(dto.getFacultyId() != null ? dto.getFacultyId() : 1);
         user.setEnrollment(dto.getEnrollment());
         user.setFullName(dto.getFullName());
         user.setEmail(dto.getEmail());
@@ -46,7 +42,7 @@ public class UserService {
     public Optional<User> update(Integer id, UpdateUserDto dto) {
         return userRepository.findById(id).map(user -> {
             if (dto.getFacultyId() != null)
-                facultyRepository.findById(dto.getFacultyId()).ifPresent(user::setFaculty);
+                user.setFacultyId(dto.getFacultyId());
             if (dto.getEnrollment() != null)
                 user.setEnrollment(dto.getEnrollment());
             if (dto.getFullName() != null)

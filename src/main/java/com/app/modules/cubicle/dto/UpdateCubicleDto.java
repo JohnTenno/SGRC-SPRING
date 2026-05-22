@@ -1,18 +1,9 @@
 package com.app.modules.cubicle.dto;
 
 public class UpdateCubicleDto {
-    private Integer buildingId;
     private String identifier;
     private Integer capacity;
     private String status;
-
-    public Integer getBuildingId() {
-        return buildingId;
-    }
-
-    public void setBuildingId(Integer buildingId) {
-        this.buildingId = buildingId;
-    }
 
     public String getIdentifier() {
         return identifier;

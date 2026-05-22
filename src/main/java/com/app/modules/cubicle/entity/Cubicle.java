@@ -1,6 +1,5 @@
 package com.app.modules.cubicle.entity;
 
-import com.app.modules.building.entity.Building;
 import jakarta.persistence.*;
 
 @Entity
@@ -12,10 +11,6 @@ public class Cubicle {
     @Column(name = "cubicle_id")
     private Integer id;
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "building_id", nullable = false)
-    private Building building;
-
     @Column(name = "name", nullable = false, length = 80)
     private String identifier;
 
@@ -24,6 +19,9 @@ public class Cubicle {
 
     @Column(nullable = false, length = 20)
     private String status;
+
+    @Column(name = "qr_token", nullable = false, unique = true, length = 100)
+    private String qrToken;
 
     public Cubicle() {
     }
@@ -34,14 +32,6 @@ public class Cubicle {
 
     public void setId(Integer id) {
         this.id = id;
-    }
-
-    public Building getBuilding() {
-        return building;
-    }
-
-    public void setBuilding(Building building) {
-        this.building = building;
     }
 
     public String getIdentifier() {
@@ -66,5 +56,13 @@ public class Cubicle {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getQrToken() {
+        return qrToken;
+    }
+
+    public void setQrToken(String qrToken) {
+        this.qrToken = qrToken;
     }
 }

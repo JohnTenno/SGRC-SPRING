@@ -1,6 +1,5 @@
 package com.app.modules.user.entity;
 
-import com.app.modules.faculty.entity.Faculty;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
@@ -13,9 +12,8 @@ public class User {
     @Column(name = "user_id")
     private Integer id;
 
-    @ManyToOne
-    @JoinColumn(name = "faculty_id", nullable = false)
-    private Faculty faculty;
+    @Column(name = "faculty_id", nullable = false)
+    private Integer facultyId;
 
     @Column(name = "first_name", nullable = false, length = 80)
     private String firstName;
@@ -32,29 +30,59 @@ public class User {
     @Column(nullable = false, length = 20)
     private String role;
 
+    @Column(name = "is_tutor", nullable = false)
+    private boolean tutor;
+
+    @Column(name = "is_blocked", nullable = false)
+    private boolean blocked;
+
     @JsonIgnore
     @Column(name = "password_hash", nullable = false)
     private String password;
 
-    public User() {}
+    public User() {
+    }
 
-    public Integer getId() { return id; }
-    public void setId(Integer id) { this.id = id; }
+    public Integer getId() {
+        return id;
+    }
 
-    public Faculty getFaculty() { return faculty; }
-    public void setFaculty(Faculty faculty) { this.faculty = faculty; }
+    public void setId(Integer id) {
+        this.id = id;
+    }
 
-    public String getFirstName() { return firstName; }
-    public void setFirstName(String firstName) { this.firstName = firstName; }
+    public Integer getFacultyId() {
+        return facultyId;
+    }
 
-    public String getLastName() { return lastName; }
-    public void setLastName(String lastName) { this.lastName = lastName; }
+    public void setFacultyId(Integer facultyId) {
+        this.facultyId = facultyId;
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
 
     @Transient
     public String getFullName() {
-        if (firstName == null && lastName == null) return null;
-        if (lastName == null || lastName.isBlank()) return firstName;
-        if (firstName == null || firstName.isBlank()) return lastName;
+        if (firstName == null && lastName == null)
+            return null;
+        if (lastName == null || lastName.isBlank())
+            return firstName;
+        if (firstName == null || firstName.isBlank())
+            return lastName;
         return firstName + " " + lastName;
     }
 
@@ -74,15 +102,51 @@ public class User {
         }
     }
 
-    public String getEnrollment() { return enrollment; }
-    public void setEnrollment(String enrollment) { this.enrollment = enrollment; }
+    public String getEnrollment() {
+        return enrollment;
+    }
 
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
+    public void setEnrollment(String enrollment) {
+        this.enrollment = enrollment;
+    }
 
-    public String getRole() { return role; }
-    public void setRole(String role) { this.role = role; }
+    public String getEmail() {
+        return email;
+    }
 
-    public String getPassword() { return password; }
-    public void setPassword(String password) { this.password = password; }
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
+
+    public boolean isTutor() {
+        return tutor;
+    }
+
+    public void setTutor(boolean tutor) {
+        this.tutor = tutor;
+    }
+
+    public boolean isBlocked() {
+        return blocked;
+    }
+
+    public void setBlocked(boolean blocked) {
+        this.blocked = blocked;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
 }
