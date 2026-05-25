@@ -24,11 +24,12 @@ public class AuthResponseDto {
         private String name;
         private String email;
         private String role;
+        private String logoUrl;
         private boolean isTutor;
         private Integer facultyId;
 
         public UserInfo(Integer id, String enrollment, String name, String email,
-                String role, boolean isTutor, Integer facultyId) {
+                String role, String logoUrl, boolean isTutor, Integer facultyId) {
             this.id = id;
             this.enrollment = enrollment;
             this.name = name;
@@ -36,6 +37,7 @@ public class AuthResponseDto {
             this.role = role;
             this.isTutor = isTutor;
             this.facultyId = facultyId;
+            this.logoUrl = logoUrl;
         }
 
         public Integer getId() {
@@ -56,6 +58,10 @@ public class AuthResponseDto {
 
         public String getRole() {
             return role;
+        }
+
+        public String getLogoUrl() {
+            return logoUrl;
         }
 
         public boolean getIsTutor() {

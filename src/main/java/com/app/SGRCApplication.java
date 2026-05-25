@@ -11,5 +11,4 @@ public class SGRCApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(SGRCApplication.class, args);
 	}
-
 }

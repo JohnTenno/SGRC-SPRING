@@ -40,6 +40,9 @@ public class User {
     @Column(name = "password_hash", nullable = false)
     private String password;
 
+    @Column(name = "logo_url", nullable = false, length = 255)
+    private String logoUrl;
+
     public User() {
     }
 
@@ -106,8 +109,16 @@ public class User {
         return enrollment;
     }
 
+    public String getLogoUrl() {
+        return logoUrl;
+    }
+
     public void setEnrollment(String enrollment) {
         this.enrollment = enrollment;
+    }
+
+    public void setLogoUrl(String logoUrl) {
+        this.logoUrl = logoUrl;
     }
 
     public String getEmail() {

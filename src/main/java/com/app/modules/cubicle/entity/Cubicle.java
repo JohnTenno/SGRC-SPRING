@@ -20,6 +20,9 @@ public class Cubicle {
     @Column(nullable = false, length = 20)
     private String status;
 
+    @Column(name = "logo_url", nullable = false, length = 255)
+    private String logoUrl;
+
     @Column(name = "qr_token", nullable = false, unique = true, length = 100)
     private String qrToken;
 
@@ -56,6 +59,14 @@ public class Cubicle {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getLogoUrl() {
+        return logoUrl;
+    }
+
+    public void setLogoUrl(String logoUrl) {
+        this.logoUrl = logoUrl;
     }
 
     public String getQrToken() {

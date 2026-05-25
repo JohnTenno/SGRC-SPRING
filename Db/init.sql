@@ -12,6 +12,8 @@ DROP TABLE IF EXISTS import_log;
 DROP TABLE IF EXISTS notification;
 DROP TABLE IF EXISTS penalty;
 DROP TABLE IF EXISTS loan;
+DROP TABLE IF EXISTS equipment_rental_request_item;
+DROP TABLE IF EXISTS equipment_rental_request;
 DROP TABLE IF EXISTS equipment_type;
 DROP TABLE IF EXISTS reservation;
 DROP TABLE IF EXISTS `user`;
@@ -36,6 +38,7 @@ CREATE TABLE cubicle (
     max_capacity  INT            NOT NULL DEFAULT 6,
     status        ENUM('AVAILABLE','OCCUPIED','MAINTENANCE')
                                  NOT NULL DEFAULT 'AVAILABLE',
+    logo_url      VARCHAR(255)   NOT NULL DEFAULT '',
     qr_token      VARCHAR(100)   NOT NULL UNIQUE DEFAULT (UUID()),
     CONSTRAINT pk_cubicle       PRIMARY KEY (cubicle_id),
     CONSTRAINT chk_capacity     CHECK (max_capacity > 0)
@@ -52,6 +55,7 @@ CREATE TABLE `user` (
     email         VARCHAR(120)   NOT NULL,
     enrollment    VARCHAR(20)    NOT NULL,
     password_hash VARCHAR(255)   NOT NULL,
+    logo_url VARCHAR(255)   NOT NULL DEFAULT '',
     role          ENUM('STUDENT','TEACHER','ADMIN','RECEPTOR')
                                  NOT NULL DEFAULT 'STUDENT',
     is_tutor      TINYINT(1)     NOT NULL DEFAULT 0,
@@ -99,12 +103,39 @@ CREATE TABLE equipment_type (
     equipment_type_id  INT            NOT NULL AUTO_INCREMENT,
     name               VARCHAR(80)    NOT NULL,
     description        VARCHAR(255),
+    logo_url           VARCHAR(255)   NOT NULL DEFAULT '',
+    category           VARCHAR(40)    NOT NULL DEFAULT '',
     total_stock        INT            NOT NULL DEFAULT 0,
     available_stock    INT            NOT NULL DEFAULT 0,
     CONSTRAINT pk_equipment_type  PRIMARY KEY (equipment_type_id),
     CONSTRAINT chk_total_stock    CHECK (total_stock >= 0),
     CONSTRAINT chk_avail_stock    CHECK (available_stock >= 0),
     CONSTRAINT chk_stock_max      CHECK (available_stock <= total_stock)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------------------
+CREATE TABLE equipment_rental_request (
+    request_id  INT  NOT NULL AUTO_INCREMENT,
+    user_id     INT  NOT NULL,
+    status      ENUM('PENDING_PICKUP','ACTIVE','RETURNED','CANCELLED')
+                     NOT NULL DEFAULT 'PENDING_PICKUP',
+    created_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT pk_equipment_rental_request PRIMARY KEY (request_id),
+    CONSTRAINT fk_erq_user FOREIGN KEY (user_id)
+        REFERENCES `user`(user_id) ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE equipment_rental_request_item (
+    item_id           INT NOT NULL AUTO_INCREMENT,
+    request_id        INT NOT NULL,
+    equipment_type_id INT NOT NULL,
+    quantity          INT NOT NULL DEFAULT 1,
+    CONSTRAINT pk_erq_item   PRIMARY KEY (item_id),
+    CONSTRAINT fk_erqi_req   FOREIGN KEY (request_id)
+        REFERENCES equipment_rental_request(request_id) ON DELETE CASCADE,
+    CONSTRAINT fk_erqi_equip FOREIGN KEY (equipment_type_id)
+        REFERENCES equipment_type(equipment_type_id) ON DELETE RESTRICT,
+    CONSTRAINT chk_erqi_qty  CHECK (quantity > 0)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ---------------------------------------------------------------------------
@@ -238,13 +269,13 @@ INSERT INTO faculty (faculty_id, name) VALUES
 --   C5: OCCUPIED      ← active reservation on it
 --   C6: MAINTENANCE
 -- ---------------------------------------------------------------------------
-INSERT INTO cubicle (cubicle_id, name, max_capacity, status) VALUES
-    (1, 'Library Cubicle 01', 6, 'AVAILABLE'),
-    (2, 'Library Cubicle 02', 4, 'AVAILABLE'),
-    (3, 'Library Cubicle 03', 6, 'AVAILABLE'),
-    (4, 'Library Cubicle 04', 4, 'AVAILABLE'),
-    (5, 'Library Cubicle 05', 6, 'OCCUPIED'),
-    (6, 'Library Cubicle 06', 4, 'MAINTENANCE');
+INSERT INTO cubicle (cubicle_id, name, max_capacity, status, logo_url) VALUES
+    (1, 'Library Cubicle 01', 6, 'AVAILABLE',   'https://media.tenor.com/ZY16_IxQsMQAAAAM/arknights-endfield.gif'),
+    (2, 'Library Cubicle 02', 4, 'AVAILABLE',   'https://media.tenor.com/IwcY6lQD0_YAAAAM/fluorite-endfield.gif'),
+    (3, 'Library Cubicle 03', 6, 'AVAILABLE',   'https://i.pinimg.com/originals/87/72/3b/87723b4da84a23daa24f5a573d4f54c3.gif'),
+    (4, 'Library Cubicle 04', 4, 'AVAILABLE',   'https://i.pinimg.com/originals/63/32/46/633246a5ded88d206fb996a1b82126c4.gif'),
+    (5, 'Library Cubicle 05', 6, 'OCCUPIED',    'https://i.makeagif.com/media/12-23-2024/obnhZt.gif'),
+    (6, 'Library Cubicle 06', 4, 'MAINTENANCE', 'https://upload-os-bbs.hoyolab.com/upload/2024/10/16/317695012/38ee29b69f1283b9b9fb81c704b4346a_4827335672541980155.gif');
 
 -- ---------------------------------------------------------------------------
 -- USERS
@@ -259,42 +290,45 @@ INSERT INTO cubicle (cubicle_id, name, max_capacity, status) VALUES
 --   8   STU005      STUDENT    0        0          1            TEST FORCED PASSWORD CHANGE
 -- ---------------------------------------------------------------------------
 INSERT INTO `user`
-    (user_id, faculty_id, first_name, last_name, email, enrollment, password_hash, role, is_tutor, is_blocked, must_change_password)
+    (user_id, faculty_id, first_name, last_name, email, enrollment, password_hash, role, logo_url, is_tutor, is_blocked, must_change_password)
 VALUES
     -- Administrator (Flujo libre para pruebas)
-    (1, 1, 'Laura',    'Mendoza Ríos',      'admin@uach.mx',          'ADM001', '$2a$10$KRAAi6/KflfRkNZwF8hh4u.cdNqXcie2MUgXNRnRYK1l5Qg1yVKc2', 'ADMIN',   0, 0, 0),
+    (1, 1, 'Laura',    'Mendoza Ríos',      'admin@uach.mx',          'ADM001', '$2a$10$KRAAi6/KflfRkNZwF8hh4u.cdNqXcie2MUgXNRnRYK1l5Qg1yVKc2', 'ADMIN', 'https://cdn.pixabay.com/photo/2018/11/13/21/43/avatar-3814049_960_720.png',   0, 0, 0),
 
     -- Normal student (Flujo libre para pruebas)
-    (2, 1, 'Nicolás',  'Nevárez Loera',     'a367886@uach.mx',        '367886', '$2a$10$KRAAi6/KflfRkNZwF8hh4u.cdNqXcie2MUgXNRnRYK1l5Qg1yVKc2', 'STUDENT', 0, 0, 0),
+    (2, 1, 'Nicolás',  'Nevárez Loera',     'a367886@uach.mx',        '367886', '$2a$10$KRAAi6/KflfRkNZwF8hh4u.cdNqXcie2MUgXNRnRYK1l5Qg1yVKc2', 'STUDENT', 'https://cdn.pixabay.com/photo/2018/11/13/21/43/avatar-3814049_960_720.png', 0, 0, 0),
 
     -- Tutor 
-    (3, 1, 'Jonathan', 'Gandara Salazar',   'a374357@uach.mx',        '374357', '$2a$10$KRAAi6/KflfRkNZwF8hh4u.cdNqXcie2MUgXNRnRYK1l5Qg1yVKc2', 'STUDENT', 1, 0, 0),
+    (3, 1, 'Jonathan', 'Gandara Salazar',   'a374357@uach.mx',        '374357', '$2a$10$KRAAi6/KflfRkNZwF8hh4u.cdNqXcie2MUgXNRnRYK1l5Qg1yVKc2', 'STUDENT', 'https://cdn.pixabay.com/photo/2018/11/13/21/43/avatar-3814049_960_720.png', 1, 0, 0),
 
     -- BLOCKED student
-    (4, 1, 'Samuel',   'García Gómez',      'a367651@uach.mx',        '367651', '$2a$10$KRAAi6/KflfRkNZwF8hh4u.cdNqXcie2MUgXNRnRYK1l5Qg1yVKc2', 'STUDENT', 0, 1, 0),
+    (4, 1, 'Samuel',   'García Gómez',      'a367651@uach.mx',        '367651', '$2a$10$KRAAi6/KflfRkNZwF8hh4u.cdNqXcie2MUgXNRnRYK1l5Qg1yVKc2', 'STUDENT', 'https://cdn.pixabay.com/photo/2018/11/13/21/43/avatar-3814049_960_720.png', 0, 1, 0),
 
     -- Active teacher
-    (5, 1, 'Marco',    'Herrera Bustamante','m.herrera@uach.mx',      'EMP001', '$2a$10$KRAAi6/KflfRkNZwF8hh4u.cdNqXcie2MUgXNRnRYK1l5Qg1yVKc2', 'TEACHER', 0, 0, 0),
+    (5, 1, 'Marco',    'Herrera Bustamante','m.herrera@uach.mx',      'EMP001', '$2a$10$KRAAi6/KflfRkNZwF8hh4u.cdNqXcie2MUgXNRnRYK1l5Qg1yVKc2', 'TEACHER', 'https://cdn.pixabay.com/photo/2018/11/13/21/43/avatar-3814049_960_720.png', 0, 0, 0),
 
     -- Teacher clean history
-    (6, 1, 'Diana',    'Ramos Ortega',      'd.ramos@uach.mx',        'EMP002', '$2a$10$KRAAi6/KflfRkNZwF8hh4u.cdNqXcie2MUgXNRnRYK1l5Qg1yVKc2', 'TEACHER', 0, 0, 0),
+    (6, 1, 'Diana',    'Ramos Ortega',      'd.ramos@uach.mx',        'EMP002', '$2a$10$KRAAi6/KflfRkNZwF8hh4u.cdNqXcie2MUgXNRnRYK1l5Qg1yVKc2', 'TEACHER', 'https://cdn.pixabay.com/photo/2018/11/13/21/43/avatar-3814049_960_720.png', 0, 0, 0),
 
     -- Student with active loan 
-    (7, 1, 'Emilio',   'Castillo Vega',     'a370001@uach.mx',        'STU004', '$2a$10$KRAAi6/KflfRkNZwF8hh4u.cdNqXcie2MUgXNRnRYK1l5Qg1yVKc2', 'STUDENT', 0, 0, 0),
+    (7, 1, 'Emilio',   'Castillo Vega',     'a370001@uach.mx',        'STU004', '$2a$10$KRAAi6/KflfRkNZwF8hh4u.cdNqXcie2MUgXNRnRYK1l5Qg1yVKc2', 'STUDENT', 'https://cdn.pixabay.com/photo/2018/11/13/21/43/avatar-3814049_960_720.png', 0, 0, 0),
 
     -- Student TEST FORCED PASSWORD CHANGE (Este usuario SÍ pedirá cambio de contraseña al loguearse)
-    (8, 1, 'Valeria',  'Torres Montoya',    'a370002@uach.mx',        'STU005', '$2a$10$KRAAi6/KflfRkNZwF8hh4u.cdNqXcie2MUgXNRnRYK1l5Qg1yVKc2', 'STUDENT', 0, 0, 1),
+    (8, 1, 'Valeria',  'Torres Montoya',    'a370002@uach.mx',        'STU005', '$2a$10$KRAAi6/KflfRkNZwF8hh4u.cdNqXcie2MUgXNRnRYK1l5Qg1yVKc2', 'STUDENT', 'https://cdn.pixabay.com/photo/2018/11/13/21/43/avatar-3814049_960_720.png', 0, 0, 1),
     
     -- iPad Receptor
-    (9, 1, 'iPad',  'Cubículo 01', 'receptor.c01@uach.mx', 'RCP001', '$2a$10$KRAAi6/KflfRkNZwF8hh4u.cdNqXcie2MUgXNRnRYK1l5Qg1yVKc2', 'RECEPTOR', 0, 0, 0);
+    (9, 1, 'iPad',  'Cubículo 01', 'receptor.c01@uach.mx', 'RCP001', '$2a$10$KRAAi6/KflfRkNZwF8hh4u.cdNqXcie2MUgXNRnRYK1l5Qg1yVKc2', 'RECEPTOR', 'https://cdn.pixabay.com/photo/2018/11/13/21/43/avatar-3814049_960_720.png', 0, 0, 0);
 
 -- ---------------------------------------------------------------------------
 -- EQUIPMENT_TYPE (RF-06)
 -- ---------------------------------------------------------------------------
-INSERT INTO equipment_type (equipment_type_id, name, description, total_stock, available_stock) VALUES
-    (1, 'PROJECTOR', 'HDMI Projector for presentations — requires ID upon request', 3, 2),
-    (2, 'BOOK',      'Reference collection textbooks',                              20, 18),
-    (3, 'MARKER',    'Whiteboard markers (set of 4 colors)',                        15, 13);
+INSERT INTO equipment_type (equipment_type_id, name, description, logo_url, category, total_stock, available_stock) VALUES
+    (1, 'Laptop',                 'Laptop para uso académico',                              '', 'computo',    4,  4),
+    (2, 'Proyector',              'Proyector HDMI para presentaciones — requiere credencial','', 'audiovisual', 3,  2),
+    (3, 'Marcadores',             'Marcadores para pizarrón (juego de 4 colores)',           '', 'material',   15, 12),
+    (4, 'Borrador para pizarrón', 'Borrador estándar para pizarrón blanco',                 '', 'material',   15, 15),
+    (5, 'Cámara web HD',          'Cámara web HD para videoconferencias',                   '', 'audiovisual', 3,  0),
+    (6, 'Calculadora científica', 'Calculadora científica para matemáticas e ingeniería',   '', 'computo',    6,  6);
 
 -- ---------------------------------------------------------------------------
 -- RESERVATIONS

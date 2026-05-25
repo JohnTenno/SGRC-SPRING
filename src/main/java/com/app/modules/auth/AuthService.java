@@ -50,6 +50,7 @@ public class AuthService implements UserDetailsService {
                 user.getFullName(),
                 user.getEmail(),
                 user.getRole(),
+                user.getLogoUrl(),
                 user.isTutor(),
                 user.getFacultyId());
         return new AuthResponseDto(token, userInfo);

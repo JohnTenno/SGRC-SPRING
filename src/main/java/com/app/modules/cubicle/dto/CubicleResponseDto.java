@@ -7,6 +7,7 @@ public class CubicleResponseDto {
     private String identifier;
     private Integer capacity;
     private String status;
+    private String logoUrl;
     private String qrToken;
 
     public CubicleResponseDto(Cubicle cubicle) {
@@ -14,6 +15,7 @@ public class CubicleResponseDto {
         this.identifier = cubicle.getIdentifier();
         this.capacity = cubicle.getCapacity();
         this.status = cubicle.getStatus();
+        this.logoUrl = cubicle.getLogoUrl();
         this.qrToken = cubicle.getQrToken();
     }
 
@@ -31,6 +33,10 @@ public class CubicleResponseDto {
 
     public String getStatus() {
         return status;
+    }
+
+    public String getLogoUrl() {
+        return logoUrl;
     }
 
     public String getQrToken() {

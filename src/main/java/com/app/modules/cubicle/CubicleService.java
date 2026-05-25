@@ -28,6 +28,7 @@ public class CubicleService {
         cubicle.setIdentifier(dto.getIdentifier());
         cubicle.setCapacity(dto.getCapacity() != null ? dto.getCapacity() : 6);
         cubicle.setStatus(dto.getStatus() != null ? dto.getStatus() : "AVAILABLE");
+        cubicle.setLogoUrl(dto.getLogoUrl() != null ? dto.getLogoUrl() : "");
         return cubicleRepository.save(cubicle);
     }
 
@@ -39,6 +40,8 @@ public class CubicleService {
                 cubicle.setCapacity(dto.getCapacity());
             if (dto.getStatus() != null)
                 cubicle.setStatus(dto.getStatus());
+            if (dto.getLogoUrl() != null)
+                cubicle.setLogoUrl(dto.getLogoUrl());
             return cubicleRepository.save(cubicle);
         });
     }
