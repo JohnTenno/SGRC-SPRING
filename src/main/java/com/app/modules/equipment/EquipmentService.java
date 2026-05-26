@@ -4,6 +4,7 @@ import com.app.modules.equipment.dto.*;
 import com.app.modules.equipment.entity.EquipmentRentalRequest;
 import com.app.modules.equipment.entity.EquipmentRentalRequestItem;
 import com.app.modules.equipment.entity.EquipmentType;
+import com.app.modules.messaging.publisher.EquipmentEventPublisher;
 import com.app.modules.user.UserRepository;
 import com.app.modules.user.entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +36,9 @@ public class EquipmentService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private EquipmentEventPublisher equipmentEventPublisher;
 
     public List<EquipmentTypeResponseDto> getEquipmentTypes(String search, String stockFilter) {
         String s = (search != null) ? search.trim() : "";
@@ -136,6 +140,7 @@ public class EquipmentService {
                     equipment.getName()));
         }
 
+        equipmentEventPublisher.publishCreated(request.getId(), user.getId());
         return new RentalRequestResponseDto(request, responseItems);
     }
 
@@ -169,6 +174,7 @@ public class EquipmentService {
                 restoreStock(request.getId());
             }
 
+            equipmentEventPublisher.publishUpdated(request.getId(), request.getUserId(), newStatus);
             return buildAdminDto(request);
         });
     }

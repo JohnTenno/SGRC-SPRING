@@ -2,31 +2,31 @@ package com.app.modules.messaging.events;
 
 import java.time.LocalDateTime;
 
-public class ReservationEvent {
+public class EquipmentEvent {
 
-    private Integer reservationId;
+    private Integer requestId;
     private Integer userId;
     private String status;
     private String eventType;
     private LocalDateTime timestamp;
 
-    public ReservationEvent() {
+    public EquipmentEvent() {
     }
 
-    public ReservationEvent(Integer reservationId, Integer userId, String status, String eventType) {
-        this.reservationId = reservationId;
+    public EquipmentEvent(Integer requestId, Integer userId, String status, String eventType) {
+        this.requestId = requestId;
         this.userId = userId;
         this.status = status;
         this.eventType = eventType;
         this.timestamp = LocalDateTime.now();
     }
 
-    public Integer getReservationId() {
-        return reservationId;
+    public Integer getRequestId() {
+        return requestId;
     }
 
-    public void setReservationId(Integer reservationId) {
-        this.reservationId = reservationId;
+    public void setRequestId(Integer requestId) {
+        this.requestId = requestId;
     }
 
     public Integer getUserId() {
@@ -63,7 +63,7 @@ public class ReservationEvent {
 
     @Override
     public String toString() {
-        return "ReservationEvent{id=" + reservationId +
+        return "EquipmentEvent{requestId=" + requestId +
                 ", userId=" + userId +
                 ", type=" + eventType +
                 ", status=" + status +

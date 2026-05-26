@@ -46,7 +46,8 @@ public class SecurityConfig {
                                                                 "/api/tutoring/professors",
                                                                 "/api/tutoring/professors/**")
                                                 .permitAll()
-                                                .anyRequest().authenticated())
+                                                .requestMatchers("/api/notifications/**").authenticated()
+                                .anyRequest().authenticated())
                                 .exceptionHandling(ex -> ex
                                                 .authenticationEntryPoint((req, res, e) -> res.sendError(
                                                                 HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized")))

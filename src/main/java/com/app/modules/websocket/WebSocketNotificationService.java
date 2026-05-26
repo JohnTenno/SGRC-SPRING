@@ -49,4 +49,13 @@ public class WebSocketNotificationService {
         payload.put("status", status);
         messagingTemplate.convertAndSend("/topic/admin/reservations", (Object) payload);
     }
+
+    public void notifyAdminEquipmentRequest(Integer requestId, Integer userId, String status) {
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("event", "EQUIPMENT_REQUEST");
+        payload.put("requestId", requestId);
+        payload.put("userId", userId);
+        payload.put("status", status);
+        messagingTemplate.convertAndSend("/topic/admin/equipment", (Object) payload);
+    }
 }

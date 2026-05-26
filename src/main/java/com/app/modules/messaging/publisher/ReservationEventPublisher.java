@@ -17,13 +17,15 @@ public class ReservationEventPublisher {
     private final ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
 
     public void publishCreated(Reservation reservation) {
+        Integer userId = reservation.getUser() != null ? reservation.getUser().getId() : null;
         send(RabbitMQConfig.ROUTING_CREATED, new ReservationEvent(
-                reservation.getId(), reservation.getStatus(), "CREATED"));
+                reservation.getId(), userId, reservation.getStatus(), "CREATED"));
     }
 
     public void publishUpdated(Reservation reservation) {
+        Integer userId = reservation.getUser() != null ? reservation.getUser().getId() : null;
         send(RabbitMQConfig.ROUTING_UPDATED, new ReservationEvent(
-                reservation.getId(), reservation.getStatus(), "UPDATED"));
+                reservation.getId(), userId, reservation.getStatus(), "UPDATED"));
     }
 
     private void send(String routingKey, ReservationEvent event) {
@@ -31,7 +33,7 @@ public class ReservationEventPublisher {
             String json = objectMapper.writeValueAsString(event);
             rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, routingKey, json);
         } catch (Exception e) {
-            throw new RuntimeException("Failed to publish event: " + event.getEventType(), e);
+            throw new RuntimeException("Failed to publish reservation event: " + event.getEventType(), e);
         }
     }
 }
