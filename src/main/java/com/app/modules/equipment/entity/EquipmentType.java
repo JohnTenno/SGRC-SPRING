@@ -23,6 +23,9 @@ public class EquipmentType {
     @Column(name = "total_stock", nullable = false)
     private Integer totalStock;
 
+    @Column(name = "available_stock", nullable = false)
+    private Integer availableStock;
+
     public EquipmentType() {
     }
 
@@ -64,5 +67,13 @@ public class EquipmentType {
 
     public void setTotalStock(Integer totalStock) {
         this.totalStock = totalStock;
+    }
+
+    public Integer getAvailableStock() {
+        return availableStock;
+    }
+
+    public void setAvailableStock(Integer availableStock) {
+        this.availableStock = availableStock;
     }
 }

@@ -15,7 +15,9 @@ import org.springframework.data.domain.Pageable;
 
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -53,7 +55,9 @@ public class EquipmentService {
         EquipmentType e = new EquipmentType();
         e.setName(dto.getName());
         e.setDescription(dto.getDescription());
-        e.setTotalStock(dto.getTotalStock() != null ? dto.getTotalStock() : 0);
+        int stock = dto.getTotalStock() != null ? dto.getTotalStock() : 0;
+        e.setTotalStock(stock);
+        e.setAvailableStock(stock);
         e.setLogoUrl(dto.getLogoUrl() != null ? dto.getLogoUrl() : "");
         return new EquipmentTypeResponseDto(equipmentTypeRepository.save(e));
     }
@@ -65,8 +69,12 @@ public class EquipmentService {
                 e.setName(dto.getName());
             if (dto.getDescription() != null)
                 e.setDescription(dto.getDescription());
-            if (dto.getTotalStock() != null)
-                e.setTotalStock(dto.getTotalStock());
+            if (dto.getTotalStock() != null) {
+                int currentlyOut = e.getTotalStock() - e.getAvailableStock();
+                int newTotal = dto.getTotalStock();
+                e.setTotalStock(newTotal);
+                e.setAvailableStock(Math.max(0, newTotal - currentlyOut));
+            }
             if (dto.getLogoUrl() != null)
                 e.setLogoUrl(dto.getLogoUrl());
             return new EquipmentTypeResponseDto(equipmentTypeRepository.save(e));
@@ -86,14 +94,19 @@ public class EquipmentService {
         User user = userRepository.findByEnrollment(enrollment)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        List<EquipmentType> equipmentList = new ArrayList<>();
+        Map<Integer, Integer> aggregated = new LinkedHashMap<>();
         for (CreateRentalRequestDto.ItemDto itemDto : dto.getItems()) {
-            EquipmentType equipment = equipmentTypeRepository.findById(itemDto.getEquipmentId())
-                    .orElseThrow(() -> new RuntimeException("Equipment not found: " + itemDto.getEquipmentId()));
-            if (equipment.getTotalStock() < itemDto.getQuantity()) {
+            aggregated.merge(itemDto.getEquipmentId(), itemDto.getQuantity(), Integer::sum);
+        }
+
+        Map<Integer, EquipmentType> equipmentMap = new LinkedHashMap<>();
+        for (Map.Entry<Integer, Integer> entry : aggregated.entrySet()) {
+            EquipmentType equipment = equipmentTypeRepository.findById(entry.getKey())
+                    .orElseThrow(() -> new RuntimeException("Equipment not found: " + entry.getKey()));
+            if (equipment.getAvailableStock() < entry.getValue()) {
                 throw new RuntimeException("Stock not available for: " + equipment.getName());
             }
-            equipmentList.add(equipment);
+            equipmentMap.put(entry.getKey(), equipment);
         }
 
         EquipmentRentalRequest request = new EquipmentRentalRequest();
@@ -101,24 +114,24 @@ public class EquipmentService {
         request = rentalRequestRepository.save(request);
 
         List<RentalRequestResponseDto.ItemDto> responseItems = new ArrayList<>();
-        for (int i = 0; i < dto.getItems().size(); i++) {
-            CreateRentalRequestDto.ItemDto itemDto = dto.getItems().get(i);
-            EquipmentType equipment = equipmentList.get(i);
+        for (Map.Entry<Integer, Integer> entry : aggregated.entrySet()) {
+            EquipmentType equipment = equipmentMap.get(entry.getKey());
+            int qty = entry.getValue();
 
-            equipment.setTotalStock(equipment.getTotalStock() - itemDto.getQuantity());
+            equipment.setAvailableStock(equipment.getAvailableStock() - qty);
             equipmentTypeRepository.save(equipment);
 
             EquipmentRentalRequestItem item = new EquipmentRentalRequestItem();
             item.setRequestId(request.getId());
             item.setEquipmentTypeId(equipment.getId());
-            item.setQuantity(itemDto.getQuantity());
+            item.setQuantity(qty);
             rentalRequestItemRepository.save(item);
 
             responseItems.add(new RentalRequestResponseDto.ItemDto(
                     equipment.getId(),
                     equipment.getName(),
-                    itemDto.getQuantity(),
-                    equipment.getTotalStock(),
+                    qty,
+                    equipment.getAvailableStock(),
                     equipment.getLogoUrl(),
                     equipment.getName()));
         }
@@ -164,7 +177,7 @@ public class EquipmentService {
         List<EquipmentRentalRequestItem> items = rentalRequestItemRepository.findByRequestId(requestId);
         for (EquipmentRentalRequestItem item : items) {
             equipmentTypeRepository.findById(item.getEquipmentTypeId()).ifPresent(e -> {
-                e.setTotalStock(e.getTotalStock() + item.getQuantity());
+                e.setAvailableStock(Math.min(e.getAvailableStock() + item.getQuantity(), e.getTotalStock()));
                 equipmentTypeRepository.save(e);
             });
         }

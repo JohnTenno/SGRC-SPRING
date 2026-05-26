@@ -8,6 +8,7 @@ public class EquipmentTypeResponseDto {
     private String description;
     private String logoUrl;
     private Integer totalStock;
+    private Integer availableStock;
 
     public EquipmentTypeResponseDto(EquipmentType e) {
         this.id = e.getId();
@@ -15,6 +16,7 @@ public class EquipmentTypeResponseDto {
         this.description = e.getDescription();
         this.logoUrl = e.getLogoUrl();
         this.totalStock = e.getTotalStock();
+        this.availableStock = e.getAvailableStock();
     }
 
     public Integer getId() {
@@ -35,5 +37,9 @@ public class EquipmentTypeResponseDto {
 
     public Integer getTotalStock() {
         return totalStock;
+    }
+
+    public Integer getAvailableStock() {
+        return availableStock;
     }
 }
