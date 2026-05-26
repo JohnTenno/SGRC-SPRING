@@ -402,8 +402,8 @@ VALUES
 INSERT INTO equipment_category (category_id, name, slug, logo_url) VALUES
     (1, 'Computo',     'computo',     ''),
     (2, 'Audiovisual', 'audiovisual', ''),
-    (3, 'Material',    'material',    '');
-    (4, 'Electrónica de Laboratorio', 'electronica', ''),
+    (3, 'Material',    'material',    ''),
+    (4, 'Electrónica de Laboratorio', 'electronica', '');
 
 -- Inventario inicial de equipo prestable (RF-06).
 -- Los stocks se actualizan automaticamente en cada prestamo y devolucion.
@@ -415,10 +415,9 @@ VALUES
     (3, 3, 'Marcadores',             'Marcadores para pizarron, juego de 4 colores',             '', 15, 15),
     (4, 3, 'Borrador para pizarron', 'Borrador estandar para pizarron blanco',                   '', 15, 15),
     (5, 2, 'Webcam',          'Camara web HD para videoconferencias',                     '', 3,  3),
-    (6, 1, 'Calculadora cientifica', 'Calculadora cientifica para matematicas e ingenieria',     '', 6,  6);
--- Equipo de laboratorio
+    (6, 1, 'Calculadora cientifica', 'Calculadora cientifica para matematicas e ingenieria',     '', 6,  6),
     (7, 4, 'Multímetro Digital',     'Multímetro TruRMS para prácticas de circuitos',            '', 10, 10),
-    (8, 4, 'Estación de Soldadura',  'Cautín de temperatura regulable (incluye base y estaño)',  '', 8,  8),
+    (8, 4, 'Estación de Soldadura',  'Cautín de temperatura regulable (incluye base y estaño)',  '', 8,  8);
 
 -- =============================================================================
 -- Verificacion rapida al final de la carga
