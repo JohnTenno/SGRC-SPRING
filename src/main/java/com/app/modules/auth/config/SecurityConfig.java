@@ -36,11 +36,14 @@ public class SecurityConfig {
                                                                 "/swagger-ui.html")
                                                 .permitAll()
                                                 .requestMatchers("/ws/**").permitAll()
-                                                .requestMatchers(HttpMethod.GET, "/api/cubicles",
+                                                .requestMatchers(HttpMethod.GET,
+                                                                "/api/cubicles",
                                                                 "/api/cubicles/**",
                                                                 "/api/equipment-types",
-                                                                "/api/equipment-rental-requests",
-                                                                "/api/equipment-rental-requests/**")
+                                                                "/api/tutoring/subjects",
+                                                                "/api/tutoring/subjects/**",
+                                                                "/api/tutoring/professors",
+                                                                "/api/tutoring/professors/**")
                                                 .permitAll()
                                                 .anyRequest().authenticated())
                                 .exceptionHandling(ex -> ex

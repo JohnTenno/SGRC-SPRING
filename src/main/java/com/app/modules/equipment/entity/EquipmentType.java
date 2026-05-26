@@ -20,14 +20,8 @@ public class EquipmentType {
     @Column(name = "logo_url", nullable = false, length = 255)
     private String logoUrl;
 
-    @Column(nullable = false, length = 40)
-    private String category;
-
     @Column(name = "total_stock", nullable = false)
     private Integer totalStock;
-
-    @Column(name = "available_stock", nullable = false)
-    private Integer availableStock;
 
     public EquipmentType() {
     }
@@ -64,27 +58,11 @@ public class EquipmentType {
         this.logoUrl = logoUrl;
     }
 
-    public String getCategory() {
-        return category;
-    }
-
-    public void setCategory(String category) {
-        this.category = category;
-    }
-
     public Integer getTotalStock() {
         return totalStock;
     }
 
     public void setTotalStock(Integer totalStock) {
         this.totalStock = totalStock;
-    }
-
-    public Integer getAvailableStock() {
-        return availableStock;
-    }
-
-    public void setAvailableStock(Integer availableStock) {
-        this.availableStock = availableStock;
     }
 }

@@ -19,7 +19,6 @@ DROP TABLE IF EXISTS penalty;
 DROP TABLE IF EXISTS loan;
 DROP TABLE IF EXISTS equipment_rental_request_item;
 DROP TABLE IF EXISTS equipment_rental_request;
-DROP TABLE IF EXISTS equipment_category;
 DROP TABLE IF EXISTS equipment_type;
 DROP TABLE IF EXISTS reservation;
 DROP TABLE IF EXISTS `user`;
@@ -130,46 +129,19 @@ CREATE INDEX idx_res_status  ON reservation(status);
 
 
 -- =============================================================================
--- Catalogo de categorias de equipo. Controla los valores validos de clasificacion
--- y sirve como fuente de datos para los filtros del frontend.
--- El campo slug es la clave que viaja en los parametros de la URL (categoria=computo).
--- =============================================================================
-CREATE TABLE equipment_category (
-    category_id INT          NOT NULL AUTO_INCREMENT,
-    name        VARCHAR(80)  NOT NULL,
-    slug        VARCHAR(40)  NOT NULL,
-    logo_url    VARCHAR(255) NOT NULL DEFAULT '',
-    CONSTRAINT pk_equipment_category PRIMARY KEY (category_id),
-    CONSTRAINT uq_category_slug      UNIQUE (slug)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-
--- =============================================================================
 -- Tipos de equipo prestable. Maneja inventario por cantidad, no por unidad individual.
--- Los campos total_stock y available_stock se actualizan transaccionalmente en cada
--- prestamo y devolucion.
--- Estados posibles: AVAILABLE | DAMAGED | OUT_OF_SERVICE
--- Un tipo en estado DAMAGED o OUT_OF_SERVICE no aparece disponible para prestamo.
+-- total_stock refleja las unidades disponibles en todo momento; se decrementa al
+-- crear una solicitud y se restaura cuando la solicitud se marca como completada.
 -- =============================================================================
 CREATE TABLE equipment_type (
     equipment_type_id INT          NOT NULL AUTO_INCREMENT,
-    category_id       INT          NOT NULL,
     name              VARCHAR(80)  NOT NULL,
     description       VARCHAR(255),
     logo_url          VARCHAR(255) NOT NULL DEFAULT '',
-    status            ENUM('AVAILABLE','DAMAGED','OUT_OF_SERVICE')
-                                   NOT NULL DEFAULT 'AVAILABLE',
     total_stock       INT          NOT NULL DEFAULT 0,
-    available_stock   INT          NOT NULL DEFAULT 0,
-    CONSTRAINT pk_equipment_type  PRIMARY KEY (equipment_type_id),
-    CONSTRAINT fk_equip_category  FOREIGN KEY (category_id)
-        REFERENCES equipment_category(category_id) ON DELETE RESTRICT ON UPDATE CASCADE,
-    CONSTRAINT chk_total_stock    CHECK (total_stock >= 0),
-    CONSTRAINT chk_avail_stock    CHECK (available_stock >= 0),
-    CONSTRAINT chk_stock_max      CHECK (available_stock <= total_stock)
+    CONSTRAINT pk_equipment_type PRIMARY KEY (equipment_type_id),
+    CONSTRAINT chk_total_stock   CHECK (total_stock >= 0)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-CREATE INDEX idx_equip_category ON equipment_type(category_id);
 
 
 -- =============================================================================
@@ -398,26 +370,18 @@ VALUES
      'RECEPTOR', 0, 0, 0);
 
 
--- Categorias de equipo. El slug es el valor que usa el frontend en los filtros.
-INSERT INTO equipment_category (category_id, name, slug, logo_url) VALUES
-    (1, 'Computo',     'computo',     ''),
-    (2, 'Audiovisual', 'audiovisual', ''),
-    (3, 'Material',    'material',    ''),
-    (4, 'Electrónica de Laboratorio', 'electronica', '');
-
--- Inventario inicial de equipo prestable (RF-06).
--- Los stocks se actualizan automaticamente en cada prestamo y devolucion.
+-- Inventario inicial de equipo prestable.
 INSERT INTO equipment_type
-    (equipment_type_id, category_id, name, description, logo_url, total_stock, available_stock)
+    (equipment_type_id, name, description, logo_url, total_stock)
 VALUES
-    (1, 1, 'Laptop',                 'Laptop para uso academico',                                '', 4,  4),
-    (2, 2, 'Proyector',              'Proyector HDMI para presentaciones, requiere credencial',  '', 3,  3),
-    (3, 3, 'Marcadores',             'Marcadores para pizarron, juego de 4 colores',             '', 15, 15),
-    (4, 3, 'Borrador para pizarron', 'Borrador estandar para pizarron blanco',                   '', 15, 15),
-    (5, 2, 'Webcam',          'Camara web HD para videoconferencias',                     '', 3,  3),
-    (6, 1, 'Calculadora cientifica', 'Calculadora cientifica para matematicas e ingenieria',     '', 6,  6),
-    (7, 4, 'Multímetro Digital',     'Multímetro TruRMS para prácticas de circuitos',            '', 10, 10),
-    (8, 4, 'Estación de Soldadura',  'Cautín de temperatura regulable (incluye base y estaño)',  '', 8,  8);
+    (1, 'Laptop',                 'Laptop para uso academico',                                '', 4),
+    (2, 'Proyector',              'Proyector HDMI para presentaciones, requiere credencial',  '', 3),
+    (3, 'Marcadores',             'Marcadores para pizarron, juego de 4 colores',             '', 15),
+    (4, 'Borrador para pizarron', 'Borrador estandar para pizarron blanco',                   '', 15),
+    (5, 'Webcam',                 'Camara web HD para videoconferencias',                     '', 3),
+    (6, 'Calculadora cientifica', 'Calculadora cientifica para matematicas e ingenieria',     '', 6),
+    (7, 'Multímetro Digital',     'Multímetro TruRMS para prácticas de circuitos',            '', 10),
+    (8, 'Estación de Soldadura',  'Cautín de temperatura regulable (incluye base y estaño)',  '', 8);
 
 -- =============================================================================
 -- Verificacion rapida al final de la carga
@@ -432,7 +396,5 @@ SELECT 'Usuarios por rol' AS tabla, role AS valor,
        SUM(is_tutor) AS tutores, SUM(is_blocked) AS bloqueados, COUNT(*) AS total
 FROM `user` GROUP BY role;
 
-SELECT 'Inventario de equipo' AS tabla, et.name AS equipo,
-       ec.name AS categoria, et.total_stock, et.available_stock
-FROM equipment_type et
-JOIN equipment_category ec ON et.category_id = ec.category_id;
+SELECT 'Inventario de equipo' AS tabla, name AS equipo, total_stock
+FROM equipment_type;

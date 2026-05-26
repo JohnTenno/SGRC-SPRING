@@ -43,17 +43,17 @@ public class RentalRequestResponseDto {
         private Integer id;
         private String type;
         private Integer quantity;
-        private Integer availableStock;
-        private String image;
+        private Integer totalStock;
+        private String logoUrl;
         private String imageAlt;
 
-        public ItemDto(Integer id, String type, Integer quantity, Integer availableStock,
-                String image, String imageAlt) {
+        public ItemDto(Integer id, String type, Integer quantity, Integer totalStock,
+                String logoUrl, String imageAlt) {
             this.id = id;
             this.type = type;
             this.quantity = quantity;
-            this.availableStock = availableStock;
-            this.image = image;
+            this.totalStock = totalStock;
+            this.logoUrl = logoUrl;
             this.imageAlt = imageAlt;
         }
 
@@ -69,12 +69,12 @@ public class RentalRequestResponseDto {
             return quantity;
         }
 
-        public Integer getAvailableStock() {
-            return availableStock;
+        public Integer getTotalStock() {
+            return totalStock;
         }
 
-        public String getImage() {
-            return image;
+        public String getLogoUrl() {
+            return logoUrl;
         }
 
         public String getImageAlt() {

@@ -4,20 +4,16 @@ import com.app.modules.equipment.entity.EquipmentType;
 
 public class EquipmentTypeResponseDto {
     private Integer id;
-    private String type;
-    private String category;
+    private String name;
     private String description;
     private String logoUrl;
-    private Integer availableStock;
     private Integer totalStock;
 
     public EquipmentTypeResponseDto(EquipmentType e) {
         this.id = e.getId();
-        this.type = e.getName();
-        this.category = e.getCategory();
+        this.name = e.getName();
         this.description = e.getDescription();
         this.logoUrl = e.getLogoUrl();
-        this.availableStock = e.getAvailableStock();
         this.totalStock = e.getTotalStock();
     }
 
@@ -25,12 +21,8 @@ public class EquipmentTypeResponseDto {
         return id;
     }
 
-    public String getType() {
-        return type;
-    }
-
-    public String getCategory() {
-        return category;
+    public String getName() {
+        return name;
     }
 
     public String getDescription() {
@@ -39,10 +31,6 @@ public class EquipmentTypeResponseDto {
 
     public String getLogoUrl() {
         return logoUrl;
-    }
-
-    public Integer getAvailableStock() {
-        return availableStock;
     }
 
     public Integer getTotalStock() {
