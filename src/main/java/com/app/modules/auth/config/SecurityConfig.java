@@ -40,6 +40,7 @@ public class SecurityConfig {
                                                                 "/api/cubicles",
                                                                 "/api/cubicles/**",
                                                                 "/api/equipment-types",
+                                                                "/api/equipment-types/**",
                                                                 "/api/tutoring/subjects",
                                                                 "/api/tutoring/subjects/**",
                                                                 "/api/tutoring/professors",

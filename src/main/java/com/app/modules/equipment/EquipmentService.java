@@ -10,6 +10,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,9 +37,15 @@ public class EquipmentService {
     public List<EquipmentTypeResponseDto> getEquipmentTypes(String search, String stockFilter) {
         String s = (search != null) ? search.trim() : "";
         String sf = (stockFilter != null && !stockFilter.isBlank()) ? stockFilter : "all";
-        return equipmentTypeRepository.findWithFilters(s, sf).stream()
+        return equipmentTypeRepository.findWithFiltersAll(s, sf).stream()
                 .map(EquipmentTypeResponseDto::new)
                 .collect(Collectors.toList());
+    }
+
+    public Page<EquipmentTypeResponseDto> getEquipmentTypesPage(String search, String stockFilter, Pageable pageable) {
+        String s = (search != null) ? search.trim() : "";
+        String sf = (stockFilter != null && !stockFilter.isBlank()) ? stockFilter : "all";
+        return equipmentTypeRepository.findWithFilters(s, sf, pageable).map(EquipmentTypeResponseDto::new);
     }
 
     @Transactional

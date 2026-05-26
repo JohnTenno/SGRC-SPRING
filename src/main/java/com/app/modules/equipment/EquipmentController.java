@@ -7,6 +7,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+
 import java.util.List;
 
 @RestController
@@ -23,6 +27,16 @@ public class EquipmentController {
             @RequestParam(required = false) String search,
             @RequestParam(required = false) String stockFilter) {
         return ResponseEntity.ok(equipmentService.getEquipmentTypes(search, stockFilter));
+    }
+
+    @GetMapping("/equipment-types/page")
+    public ResponseEntity<Page<EquipmentTypeResponseDto>> getEquipmentTypesPage(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String stockFilter,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "9") int size) {
+        PageRequest pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "name"));
+        return ResponseEntity.ok(equipmentService.getEquipmentTypesPage(search, stockFilter, pageable));
     }
 
     @PostMapping("/equipment-types")
