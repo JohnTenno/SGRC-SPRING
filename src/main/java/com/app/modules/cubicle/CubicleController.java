@@ -5,13 +5,14 @@ import com.app.modules.cubicle.dto.CubicleResponseDto;
 import com.app.modules.cubicle.dto.UpdateCubicleDto;
 import com.app.modules.reservation.ReservationService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/cubicles")
@@ -24,10 +25,17 @@ public class CubicleController {
     private ReservationService reservationService;
 
     @GetMapping
-    public List<CubicleResponseDto> getAll() {
-        return cubicleService.findAll().stream()
-                .map(CubicleResponseDto::new)
-                .collect(Collectors.toList());
+    public Page<CubicleResponseDto> getAll(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) List<String> status,
+            @RequestParam(required = false) Integer minCapacity,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        Pageable pageable = PageRequest.of(page, size);
+
+        return cubicleService.findFiltered(search, status, minCapacity, pageable)
+                .map(CubicleResponseDto::new);
     }
 
     @GetMapping("/{id}")
