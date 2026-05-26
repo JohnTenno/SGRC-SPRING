@@ -12,6 +12,7 @@ public class ReservationResponseDto {
     private String userFullName;
     private Integer cubicleId;
     private String cubicleIdentifier;
+    private String cubicleLogoUrl;
     private LocalDate date;
     private LocalTime startTime;
     private LocalTime endTime;
@@ -24,6 +25,7 @@ public class ReservationResponseDto {
         this.userFullName = reservation.getUser().getFullName();
         this.cubicleId = reservation.getCubicle().getId();
         this.cubicleIdentifier = reservation.getCubicle().getIdentifier();
+        this.cubicleLogoUrl = reservation.getCubicle().getLogoUrl();
         this.date = reservation.getDate();
         this.startTime = reservation.getStartTime();
         this.endTime = reservation.getEndTime();
@@ -49,6 +51,10 @@ public class ReservationResponseDto {
 
     public String getCubicleIdentifier() {
         return cubicleIdentifier;
+    }
+
+    public String getCubicleLogoUrl() {
+        return cubicleLogoUrl;
     }
 
     public LocalDate getDate() {
