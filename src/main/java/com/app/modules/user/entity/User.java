@@ -30,9 +30,6 @@ public class User {
     @Column(nullable = false, length = 20)
     private String role;
 
-    @Column(name = "is_tutor", nullable = false)
-    private boolean tutor;
-
     @Column(name = "is_blocked", nullable = false)
     private boolean blocked;
 
@@ -135,14 +132,6 @@ public class User {
 
     public void setRole(String role) {
         this.role = role;
-    }
-
-    public boolean isTutor() {
-        return tutor;
-    }
-
-    public void setTutor(boolean tutor) {
-        this.tutor = tutor;
     }
 
     public boolean isBlocked() {

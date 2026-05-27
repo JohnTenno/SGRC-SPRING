@@ -40,11 +40,7 @@ public class SecurityConfig {
                                                                 "/api/cubicles",
                                                                 "/api/cubicles/**",
                                                                 "/api/equipment-types",
-                                                                "/api/equipment-types/**",
-                                                                "/api/tutoring/subjects",
-                                                                "/api/tutoring/subjects/**",
-                                                                "/api/tutoring/professors",
-                                                                "/api/tutoring/professors/**")
+                                                                "/api/equipment-types/**")
                                                 .permitAll()
                                                 .requestMatchers("/api/notifications/**").authenticated()
                                 .anyRequest().authenticated())

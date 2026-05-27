@@ -32,7 +32,7 @@ free_port() {
   local port=$1 pid
   if command -v lsof >/dev/null 2>&1; then
     pid=$(lsof -ti:"$port" 2>/dev/null | head -1)
-    [ -n "$pid" ] && kill -9 "$pid" 2>/dev/null && echo "   port $port free (PID $pid)"
+    if [ -n "$pid" ]; then kill -9 "$pid" 2>/dev/null && echo "   port $port free (PID $pid)"; fi
   else
     pid=$(netstat -ano 2>/dev/null | grep ":$port " | grep LISTENING | awk '{print $NF}' | head -1)
     if [ -n "$pid" ] && [ "$pid" != "0" ]; then

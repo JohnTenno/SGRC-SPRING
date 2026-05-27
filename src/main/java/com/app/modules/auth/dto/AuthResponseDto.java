@@ -25,17 +25,15 @@ public class AuthResponseDto {
         private String email;
         private String role;
         private String logoUrl;
-        private boolean isTutor;
         private Integer facultyId;
 
         public UserInfo(Integer id, String enrollment, String name, String email,
-                String role, String logoUrl, boolean isTutor, Integer facultyId) {
+                String role, String logoUrl, Integer facultyId) {
             this.id = id;
             this.enrollment = enrollment;
             this.name = name;
             this.email = email;
             this.role = role;
-            this.isTutor = isTutor;
             this.facultyId = facultyId;
             this.logoUrl = logoUrl;
         }
@@ -62,10 +60,6 @@ public class AuthResponseDto {
 
         public String getLogoUrl() {
             return logoUrl;
-        }
-
-        public boolean getIsTutor() {
-            return isTutor;
         }
 
         public Integer getFacultyId() {

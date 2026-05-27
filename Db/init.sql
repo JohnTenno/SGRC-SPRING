@@ -19,15 +19,10 @@ USE sgrc_db;
 --   equipment_rental_request      — solicitudes digitales de préstamo de equipo
 --   equipment_rental_request_item — ítems por solicitud (relación N:M desnormalizada)
 --   penalty                       — sanciones automáticas y manuales por incumplimiento
---   tutoring_*  (4 tablas)        — módulo de tutorías: profesores, materias, ofertas y solicitudes
 -- =============================================================================
 
 SET FOREIGN_KEY_CHECKS = 0;
 
-DROP TABLE IF EXISTS tutoring_request;
-DROP TABLE IF EXISTS tutoring_offering;
-DROP TABLE IF EXISTS tutoring_professor;
-DROP TABLE IF EXISTS tutoring_subject;
 DROP TABLE IF EXISTS penalty;
 DROP TABLE IF EXISTS equipment_rental_request_item;
 DROP TABLE IF EXISTS equipment_rental_request;
@@ -61,8 +56,6 @@ CREATE TABLE faculty (
 --   RECEPTOR — usuario de sistema asignado al iPad de cada cubículo; solo puede
 --              renderizar el QR de check-in, sin acceso a ningún otro módulo.
 --
--- is_tutor             — cuando es 1 el alumno aparece en el directorio de tutores
---                        y puede recibir solicitudes de tutoría de otros alumnos.
 -- is_blocked           — bloqueo activo por sanción; impide crear reservaciones
 --                        y solicitudes de equipo. Se levanta automáticamente cuando
 --                        todas las sanciones activas del usuario expiran.
@@ -82,7 +75,6 @@ CREATE TABLE `user` (
     logo_url             VARCHAR(255) NOT NULL DEFAULT '',
     role                 ENUM('STUDENT','TEACHER','ADMIN','RECEPTOR')
                                       NOT NULL DEFAULT 'STUDENT',
-    is_tutor             TINYINT(1)   NOT NULL DEFAULT 0,
     is_blocked           TINYINT(1)   NOT NULL DEFAULT 0,
     must_change_password TINYINT(1)   NOT NULL DEFAULT 1,
     CONSTRAINT pk_user        PRIMARY KEY (user_id),
@@ -171,8 +163,10 @@ CREATE TABLE equipment_type (
     description       VARCHAR(255),
     logo_url          VARCHAR(255) NOT NULL DEFAULT '',
     total_stock       INT          NOT NULL DEFAULT 0,
+    available_stock   INT          NOT NULL DEFAULT 0,
     CONSTRAINT pk_equipment_type PRIMARY KEY (equipment_type_id),
-    CONSTRAINT chk_total_stock   CHECK (total_stock >= 0)
+    CONSTRAINT chk_total_stock     CHECK (total_stock >= 0),
+    CONSTRAINT chk_available_stock CHECK (available_stock >= 0)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
@@ -261,81 +255,6 @@ CREATE INDEX idx_penal_user ON penalty(user_id, is_active);
 
 
 -- =============================================================================
--- MÓDULO DE TUTORÍAS
--- Cuatro tablas independientes que gestionan el directorio de tutores,
--- el catálogo de materias, las ofertas de horario y las solicitudes de alumnos.
--- =============================================================================
-
--- Materias disponibles para tutoría. Catálogo maestro mantenido por el admin.
-CREATE TABLE tutoring_subject (
-    subject_id  INT          NOT NULL AUTO_INCREMENT,
-    name        VARCHAR(120) NOT NULL,
-    description TEXT,
-    CONSTRAINT pk_tutoring_subject PRIMARY KEY (subject_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-
--- Profesores y alumnos-tutores registrados en el módulo de tutorías.
--- employee_number es el PK natural; para alumnos-tutores corresponde a su matrícula.
-CREATE TABLE tutoring_professor (
-    employee_number VARCHAR(20)  NOT NULL,
-    first_name      VARCHAR(80)  NOT NULL,
-    last_name       VARCHAR(80)  NOT NULL,
-    bio             TEXT,
-    CONSTRAINT pk_tutoring_professor PRIMARY KEY (employee_number)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-
--- Configuración de disponibilidad de cada tutor.
--- Relación 1:1 con tutoring_professor (se crea automáticamente al registrar al tutor).
---
--- available_weekdays — lista serializada como JSON de días disponibles
---                      Ej: '["MONDAY","WEDNESDAY","FRIDAY"]'
--- subject_ids        — lista serializada de IDs de tutoring_subject que imparte
---                      Ej: '[1,3,5]'
--- Nota: La serialización en TEXT con conversor JPA es intencional para mantener
--- la simplicidad del modelo sin tablas pivot adicionales.
-CREATE TABLE tutoring_offering (
-    employee_number   VARCHAR(20)  NOT NULL,
-    schedule_summary  VARCHAR(50),
-    tutoring_location VARCHAR(120),
-    available_weekdays TEXT,
-    subject_ids        TEXT,
-    CONSTRAINT pk_tutoring_offering  PRIMARY KEY (employee_number),
-    CONSTRAINT fk_offering_professor FOREIGN KEY (employee_number)
-        REFERENCES tutoring_professor(employee_number) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-
--- Solicitudes de tutoría enviadas por alumnos a un tutor específico.
---
--- Ciclo de vida del status:
---   PENDING   → solicitud enviada, esperando respuesta del tutor.
---   CONFIRMED → tutor aceptó la sesión.
---   REJECTED  → tutor rechazó la solicitud.
---   COMPLETED → sesión realizada.
---   CANCELLED → cancelada por el alumno antes de la fecha.
-CREATE TABLE tutoring_request (
-    tutoring_request_id      INT         NOT NULL AUTO_INCREMENT,
-    student_enrollment       VARCHAR(20) NOT NULL,
-    professor_employee_number VARCHAR(20) NOT NULL,
-    subject                  VARCHAR(120) NOT NULL,
-    reservation_date         DATE        NOT NULL,
-    start_time               VARCHAR(5)  NOT NULL,
-    end_time                 VARCHAR(5)  NOT NULL,
-    topic                    TEXT,
-    status                   ENUM('PENDING','CONFIRMED','REJECTED','COMPLETED','CANCELLED')
-                                         NOT NULL DEFAULT 'PENDING',
-    created_at               TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT pk_tutoring_request PRIMARY KEY (tutoring_request_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-CREATE INDEX idx_treq_student   ON tutoring_request(student_enrollment);
-CREATE INDEX idx_treq_professor ON tutoring_request(professor_employee_number);
-CREATE INDEX idx_treq_status    ON tutoring_request(status);
-
-
--- =============================================================================
 -- DML — Datos iniciales del sistema
 -- Contraseña de todos los usuarios de prueba: password123
 -- Hash BCrypt costo 10: $2a$10$KRAAi6/KflfRkNZwF8hh4u.cdNqXcie2MUgXNRnRYK1l5Qg1yVKc2
@@ -359,46 +278,46 @@ INSERT INTO cubicle (cubicle_id, name, max_capacity, status, logo_url) VALUES
 -- Usuarios de prueba. Cada combinación de rol e indicadores cubre un caso
 -- de uso distinto para la demostración del sistema:
 --
---   id  matrícula  rol       tutor  bloq.  change_pwd  descripción
---   1   ADM001     ADMIN     no     no     no          administrador principal
---   2   367886     STUDENT   no     no     no          alumno activo sin restricciones
---   3   374357     STUDENT   sí     no     no          alumno con privilegios de tutor
---   4   367651     STUDENT   no     sí     no          alumno bloqueado por sanción activa
---   5   EMP001     TEACHER   no     no     no          docente activo
---   9   RCP001     RECEPTOR  no     no     no          iPad del cubículo 01
+--   id  matrícula  rol       bloq.  change_pwd  descripción
+--   1   ADM001     ADMIN     no     no          administrador principal
+--   2   367886     STUDENT   no     no          alumno activo sin restricciones
+--   3   374357     STUDENT   no     no          alumno activo sin restricciones
+--   4   367651     STUDENT   sí     no          alumno bloqueado por sanción activa
+--   5   EMP001     TEACHER   no     no          docente activo
+--   9   RCP001     RECEPTOR  no     no          iPad del cubículo 01
 INSERT INTO `user`
     (user_id, faculty_id, first_name, last_name, email, enrollment,
-     password_hash, logo_url, role, is_tutor, is_blocked, must_change_password)
+     password_hash, logo_url, role, is_blocked, must_change_password)
 VALUES
     (1, 1, 'Laura',    'Mendoza Rios',       'admin@uach.mx',        'ADM001',
      '$2a$10$KRAAi6/KflfRkNZwF8hh4u.cdNqXcie2MUgXNRnRYK1l5Qg1yVKc2',
      'https://cdn.pixabay.com/photo/2018/11/13/21/43/avatar-3814049_960_720.png',
-     'ADMIN',    0, 0, 0),
+     'ADMIN',    0, 0),
 
     (2, 1, 'Nicolas',  'Nevarez Loera',      'a367886@uach.mx',      '367886',
      '$2a$10$KRAAi6/KflfRkNZwF8hh4u.cdNqXcie2MUgXNRnRYK1l5Qg1yVKc2',
      'https://cdn.pixabay.com/photo/2018/11/13/21/43/avatar-3814049_960_720.png',
-     'STUDENT',  0, 0, 0),
+     'STUDENT',  0, 0),
 
     (3, 1, 'Jonathan', 'Gandara Salazar',    'a374357@uach.mx',      '374357',
      '$2a$10$KRAAi6/KflfRkNZwF8hh4u.cdNqXcie2MUgXNRnRYK1l5Qg1yVKc2',
      'https://cdn.pixabay.com/photo/2018/11/13/21/43/avatar-3814049_960_720.png',
-     'STUDENT',  1, 0, 0),
+     'STUDENT',  0, 0),
 
     (4, 1, 'Samuel',   'Garcia Gomez',       'a367651@uach.mx',      '367651',
      '$2a$10$KRAAi6/KflfRkNZwF8hh4u.cdNqXcie2MUgXNRnRYK1l5Qg1yVKc2',
      'https://cdn.pixabay.com/photo/2018/11/13/21/43/avatar-3814049_960_720.png',
-     'STUDENT',  0, 1, 0),
+     'STUDENT',  1, 0),
 
     (5, 1, 'Marco',    'Herrera Bustamante', 'm.herrera@uach.mx',    'EMP001',
      '$2a$10$KRAAi6/KflfRkNZwF8hh4u.cdNqXcie2MUgXNRnRYK1l5Qg1yVKc2',
      'https://cdn.pixabay.com/photo/2018/11/13/21/43/avatar-3814049_960_720.png',
-     'TEACHER',  0, 0, 0),
+     'TEACHER',  0, 0),
 
     (9, 1, 'iPad',     'Cubículo 01',        'receptor.c01@uach.mx', 'RCP001',
      '$2a$10$KRAAi6/KflfRkNZwF8hh4u.cdNqXcie2MUgXNRnRYK1l5Qg1yVKc2',
      'https://cdn.pixabay.com/photo/2018/11/13/21/43/avatar-3814049_960_720.png',
-     'RECEPTOR', 0, 0, 0);
+     'RECEPTOR', 0, 0);
 
 
 -- Sanción de demo activa para el alumno bloqueado (user_id = 4).
@@ -416,40 +335,16 @@ VALUES
 
 -- Inventario inicial de equipo prestable.
 INSERT INTO equipment_type
-    (equipment_type_id, name, description, logo_url, total_stock)
+    (equipment_type_id, name, description, logo_url, total_stock, available_stock)
 VALUES
-    (1, 'Laptop',                  'Laptop para uso académico',                                '', 4),
-    (2, 'Proyector',               'Proyector HDMI para presentaciones',                       '', 3),
-    (3, 'Marcadores',              'Marcadores para pizarrón, juego de 4 colores',             '', 15),
-    (4, 'Borrador para pizarrón',  'Borrador estándar para pizarrón blanco',                   '', 15),
-    (5, 'Webcam',                  'Cámara web HD para videoconferencias',                     '', 3),
-    (6, 'Calculadora científica',  'Calculadora científica para matemáticas e ingeniería',     '', 6),
-    (7, 'Multímetro Digital',      'Multímetro TruRMS para prácticas de circuitos',            '', 10),
-    (8, 'Estación de Soldadura',   'Cautín de temperatura regulable (incluye base y estaño)',  '', 8);
-
-
--- Tutor de demostración para el módulo de tutorías.
--- Vinculado al alumno user_id=3 (Jonathan Gandara, is_tutor=1).
-INSERT INTO tutoring_professor
-    (employee_number, first_name, last_name, bio)
-VALUES
-    ('374357', 'Jonathan', 'Gandara Salazar',
-     'Alumno de 8vo semestre de Ingeniería en Sistemas. Disponible para tutorías en Cálculo, Programación y Bases de Datos.');
-
-INSERT INTO tutoring_offering
-    (employee_number, schedule_summary, tutoring_location, available_weekdays, subject_ids)
-VALUES
-    ('374357', 'Lunes y Miércoles 14:00–16:00', 'Cubículo Biblioteca 03',
-     '["MONDAY","WEDNESDAY"]', '[1,2]');
-
-
--- Materias de demostración para el catálogo de tutorías.
-INSERT INTO tutoring_subject (subject_id, name, description) VALUES
-    (1, 'Cálculo Diferencial',    'Límites, derivadas y sus aplicaciones en ingeniería.'),
-    (2, 'Bases de Datos',         'Modelado relacional, SQL, normalización y transacciones.'),
-    (3, 'Programación Orientada a Objetos', 'Clases, herencia, polimorfismo y patrones de diseño.'),
-    (4, 'Álgebra Lineal',         'Vectores, matrices, transformaciones y espacios vectoriales.'),
-    (5, 'Redes de Computadoras',  'Modelos OSI/TCP-IP, protocolos y configuración de redes.');
+    (1, 'Laptop',                  'Laptop para uso académico',                                'https://media.tenor.com/AAMEFNsRaeEAAAAM/anime-girl.gif',                                    4,  4),
+    (2, 'Proyector',               'Proyector HDMI para presentaciones',                       'https://i.pinimg.com/originals/28/28/2a/28282a80b30a0fd14089e0c6cafc0e2a.gif',               3,  3),
+    (3, 'Marcadores',              'Marcadores para pizarrón, juego de 4 colores',             'https://i.redd.it/qi6ia2jqx90e1.gif',                                                        15, 15),
+    (4, 'Borrador para pizarrón',  'Borrador estándar para pizarrón blanco',                   'https://media.tenor.com/D--yGsQy2EsAAAAM/crying-girl-anime.gif',                             15, 15),
+    (5, 'Webcam',                  'Cámara web HD para videoconferencias',                     'https://i.pinimg.com/originals/17/52/2f/17522fdf5d21b805a3889d1720c290e5.gif',               3,  3),
+    (6, 'Calculadora científica',  'Calculadora científica para matemáticas e ingeniería',     'https://i.gifer.com/BHAH.gif',                                                               6,  6),
+    (7, 'Multímetro Digital',      'Multímetro TruRMS para prácticas de circuitos',            'https://i.gifer.com/Awch.gif',                                                                                           10, 10),
+    (8, 'Estación de Soldadura',   'Cautín de temperatura regulable (incluye base y estaño)',  'https://media.tenor.com/2ZuUWp5LDfIAAAAM/konata-lucky-star.gif',                                                                                           8,  8);
 
 
 -- =============================================================================
@@ -464,7 +359,6 @@ FROM cubicle GROUP BY status;
 
 SELECT 'Usuarios por rol'        AS tabla,
        role                      AS valor,
-       SUM(is_tutor)             AS tutores,
        SUM(is_blocked)           AS bloqueados,
        COUNT(*)                  AS total
 FROM `user` GROUP BY role;
@@ -473,16 +367,3 @@ SELECT 'Inventario de equipo'    AS tabla,
        name                      AS equipo,
        total_stock
 FROM equipment_type;
-
-SELECT 'Tutores registrados'     AS tabla,
-       tp.employee_number,
-       tp.first_name,
-       tp.last_name,
-       COUNT(tr.tutoring_request_id) AS solicitudes
-FROM tutoring_professor tp
-LEFT JOIN tutoring_request tr ON tr.professor_employee_number = tp.employee_number
-GROUP BY tp.employee_number, tp.first_name, tp.last_name;
-
-SELECT 'Materias disponibles'    AS tabla,
-       name                      AS materia
-FROM tutoring_subject;
