@@ -38,6 +38,17 @@ Eso es todo. El script hace en orden:
 
 ---
 
+> **Importante — usar HTTPS obligatoriamente**
+>
+> El servidor **solo acepta HTTPS**, incluso en desarrollo local. Esto es intencional: iOS no permite acceso a la cámara desde contextos no seguros (`http://`), y el módulo de check-in por QR requiere la cámara del dispositivo.
+>
+> - Correcto: `https://localhost:3000`
+> - Incorrecto: `http://localhost:3000` (el servidor no responderá)
+>
+> El certificado es autofirmado (`keystore.p12`). En iOS, además de aceptarlo en Safari, puede ser necesario instalarlo como perfil de confianza en **Ajustes → General → VPN y gestión del dispositivo**.
+
+---
+
 ## Scripts disponibles
 
 | Script | Qué hace |
@@ -51,8 +62,6 @@ Eso es todo. El script hace en orden:
 
 Abre **`https://localhost:3000`** en el navegador.  
 El certificado es autofirmado, el browser pedirá aceptarlo una vez — haz clic en *"Continuar de todas formas"*.
-
----
 
 ## Usuarios de prueba
 
