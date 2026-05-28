@@ -1,0 +1,130 @@
+@font-face {
+    font-family: 'Praxis LT Pro';
+    src: url('PraxisLTPro-LightOblique.eot');
+    src: local('Praxis LT Pro Light Oblique'), local('PraxisLTPro-LightOblique'),
+        url('PraxisLTPro-LightOblique.eot?#iefix') format('embedded-opentype'),
+        url('PraxisLTPro-LightOblique.woff2') format('woff2'),
+        url('PraxisLTPro-LightOblique.woff') format('woff'),
+        url('PraxisLTPro-LightOblique.ttf') format('truetype');
+    font-weight: 300;
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Praxis LT Pro';
+    src: url('PraxisLTPro-Heavy.eot');
+    src: local('Praxis LT Pro Heavy'), local('PraxisLTPro-Heavy'),
+        url('PraxisLTPro-Heavy.eot?#iefix') format('embedded-opentype'),
+        url('PraxisLTPro-Heavy.woff2') format('woff2'),
+        url('PraxisLTPro-Heavy.woff') format('woff'),
+        url('PraxisLTPro-Heavy.ttf') format('truetype');
+    font-weight: 900;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Praxis LT Pro';
+    src: url('PraxisLTPro-Bold.eot');
+    src: local('Praxis LT Pro Bold'), local('PraxisLTPro-Bold'),
+        url('PraxisLTPro-Bold.eot?#iefix') format('embedded-opentype'),
+        url('PraxisLTPro-Bold.woff2') format('woff2'),
+        url('PraxisLTPro-Bold.woff') format('woff'),
+        url('PraxisLTPro-Bold.ttf') format('truetype');
+    font-weight: bold;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Praxis LT Pro';
+    src: url('PraxisLTPro-Light.eot');
+    src: local('Praxis LT Pro Light'), local('PraxisLTPro-Light'),
+        url('PraxisLTPro-Light.eot?#iefix') format('embedded-opentype'),
+        url('PraxisLTPro-Light.woff2') format('woff2'),
+        url('PraxisLTPro-Light.woff') format('woff'),
+        url('PraxisLTPro-Light.ttf') format('truetype');
+    font-weight: 300;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Praxis LT Pro';
+    src: url('PraxisLTPro-SemiBoldOblique.eot');
+    src: local('Praxis LT Pro SemiBold Oblique'), local('PraxisLTPro-SemiBoldOblique'),
+        url('PraxisLTPro-SemiBoldOblique.eot?#iefix') format('embedded-opentype'),
+        url('PraxisLTPro-SemiBoldOblique.woff2') format('woff2'),
+        url('PraxisLTPro-SemiBoldOblique.woff') format('woff'),
+        url('PraxisLTPro-SemiBoldOblique.ttf') format('truetype');
+    font-weight: 600;
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Praxis LT Pro';
+    src: url('PraxisLTPro-Regular.eot');
+    src: local('Praxis LT Pro Regular'), local('PraxisLTPro-Regular'),
+        url('PraxisLTPro-Regular.eot?#iefix') format('embedded-opentype'),
+        url('PraxisLTPro-Regular.woff2') format('woff2'),
+        url('PraxisLTPro-Regular.woff') format('woff'),
+        url('PraxisLTPro-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Praxis LT Pro';
+    src: url('PraxisLTPro-Oblique.eot');
+    src: local('Praxis LT Pro Oblique'), local('PraxisLTPro-Oblique'),
+        url('PraxisLTPro-Oblique.eot?#iefix') format('embedded-opentype'),
+        url('PraxisLTPro-Oblique.woff2') format('woff2'),
+        url('PraxisLTPro-Oblique.woff') format('woff'),
+        url('PraxisLTPro-Oblique.ttf') format('truetype');
+    font-weight: normal;
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Praxis LT Pro';
+    src: url('PraxisLTPro-SemiBold.eot');
+    src: local('Praxis LT Pro SemiBold'), local('PraxisLTPro-SemiBold'),
+        url('PraxisLTPro-SemiBold.eot?#iefix') format('embedded-opentype'),
+        url('PraxisLTPro-SemiBold.woff2') format('woff2'),
+        url('PraxisLTPro-SemiBold.woff') format('woff'),
+        url('PraxisLTPro-SemiBold.ttf') format('truetype');
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Praxis LT Pro';
+    src: url('PraxisLTPro-HeavyOblique.eot');
+    src: local('Praxis LT Pro Heavy Oblique'), local('PraxisLTPro-HeavyOblique'),
+        url('PraxisLTPro-HeavyOblique.eot?#iefix') format('embedded-opentype'),
+        url('PraxisLTPro-HeavyOblique.woff2') format('woff2'),
+        url('PraxisLTPro-HeavyOblique.woff') format('woff'),
+        url('PraxisLTPro-HeavyOblique.ttf') format('truetype');
+    font-weight: 900;
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Praxis LT Pro';
+    src: url('PraxisLTPro-BoldOblique.eot');
+    src: local('Praxis LT Pro Bold Oblique'), local('PraxisLTPro-BoldOblique'),
+        url('PraxisLTPro-BoldOblique.eot?#iefix') format('embedded-opentype'),
+        url('PraxisLTPro-BoldOblique.woff2') format('woff2'),
+        url('PraxisLTPro-BoldOblique.woff') format('woff'),
+        url('PraxisLTPro-BoldOblique.ttf') format('truetype');
+    font-weight: bold;
+    font-style: normal;
+    font-display: swap;
+}
+

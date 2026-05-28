@@ -1,5 +1,6 @@
 #!/bin/bash
 set -e
+export PATH="$HOME/.local/bin:/opt/homebrew/bin:/usr/local/bin:$PATH"
 
 echo "▶ Delete..."
 cd Db && docker compose down -v && cd ..
@@ -25,6 +26,9 @@ wait_for_container() {
 
 wait_for_container sgrc_db "mysql -h 127.0.0.1 -P 3306 -u sgrc_user -psgrc_password sgrc_db -e 'SELECT 1 FROM \`user\` LIMIT 1' 2>/dev/null"
 wait_for_container sgrc_rabbitmq "rabbitmq-diagnostics -q ping"
+
+echo "▶ building frontend..."
+pnpm --dir /Users/johntenno/Documents/SCRG/SGRC-REACT build
 
 echo "▶ starting springboot..."
 
