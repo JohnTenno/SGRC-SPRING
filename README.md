@@ -38,7 +38,8 @@ Eso es todo. El script hace en orden:
 
 ---
 
-**Importante — usar HTTPS obligatoriamente**
+# IMPORTANTE
+**usar HTTPS obligatoriamente**
 
 El servidor **solo acepta HTTPS**, incluso en desarrollo local. Esto es intencional: iOS no permite acceso a la cámara desde contextos no seguros (`http://`), y el módulo de check-in por QR requiere la cámara del dispositivo.
 
