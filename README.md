@@ -117,6 +117,42 @@ Luego reinicia Spring Boot (sin necesidad de volver a correr restart.sh si solo 
 pkill -f SGRCApplication   # mata el proceso actual
 ./mvnw spring-boot:run     # vuelve a arrancar
 ```
+---
+
+## Apache Camel — Rutas implementadas
+
+### `EquipmentCamelRoute`
+Procesa el ciclo de vida de solicitudes de renta de equipo.
+
+| Endpoint interno | Disparado cuando | Acción |
+|-----------------|-----------------|--------|
+| `direct:equipment.created` | Se crea una solicitud de renta | Notifica al admin en tiempo real vía WebSocket |
+| `direct:equipment.updated` | Cambia el estado de una solicitud | Guarda notificación en BD y envía mensaje al alumno vía WebSocket |
+
+Estados manejados: `READY_FOR_PICKUP`, `AWAITING_RETURN`, `COMPLETED`, `CANCELLED`.
+
+### `ReservationCamelRoute`
+Procesa el ciclo de vida de reservaciones de cubículos.
+
+| Endpoint interno | Disparado cuando | Acción |
+|-----------------|-----------------|--------|
+| `direct:reservation.created` | Se crea una reservación | Guarda notificación en BD y envía confirmación al usuario vía WebSocket |
+| `direct:reservation.updated` | Cambia el estado de una reservación | Guarda notificación en BD y envía actualización al usuario vía WebSocket |
+
+Estados manejados: `APPROVED`, `ACTIVE`, `COMPLETED`, `CANCELLED`, `NO_SHOW`.
+
+---
+
+## RabbitMQ — Exchanges y colas
+
+| Exchange | Cola | Routing Key | Uso |
+|----------|------|-------------|-----|
+| `reservation.exchange` | `reservation.created` | `reservation.created` | Evento de nueva reservación |
+| `reservation.exchange` | `reservation.updated` | `reservation.updated` | Evento de cambio de estado |
+| `equipment.exchange` | `equipment.request.created` | `equipment.request.created` | Evento de nueva solicitud de equipo |
+| `equipment.exchange` | `equipment.request.updated` | `equipment.request.updated` | Evento de cambio de estado |
+
+Todas las colas son **durables** (sobreviven reinicios de RabbitMQ).
 
 ---
 
